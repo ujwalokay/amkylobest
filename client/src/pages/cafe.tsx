@@ -18,12 +18,24 @@ import {
   Dribbble
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import useEmblaCarousel from "embla-carousel-react";
 import type { Cafe } from "@shared/schema";
+import pcSetupImg from "@assets/generated_images/Gaming_cafe_PC_setup_interior_7936e5eb.png";
+import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_8b8e7595.png";
+import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.png";
 
 export default function CafePage() {
   const { data: cafe, isLoading } = useQuery<Cafe>({
     queryKey: ["/api/cafe"],
   });
+
+  const [emblaRef] = useEmblaCarousel({ loop: true });
+
+  const cafeImages = [
+    { src: pcSetupImg, alt: "Gaming PC Setup" },
+    { src: consoleAreaImg, alt: "Console Gaming Area" },
+    { src: vrZoneImg, alt: "VR Gaming Zone" }
+  ];
 
   if (isLoading) {
     return (
@@ -95,6 +107,22 @@ export default function CafePage() {
 
       {/* Main Content */}
       <div className="px-4 pt-4 space-y-4">
+        {/* Cafe Images Carousel */}
+        <div className="overflow-hidden rounded-xl" ref={emblaRef} data-testid="carousel-cafe-images">
+          <div className="flex">
+            {cafeImages.map((image, index) => (
+              <div key={index} className="flex-[0_0_100%] min-w-0">
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-48 object-cover"
+                  data-testid={`image-cafe-${index}`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Header Card */}
         <Card className="p-4 border-card-border" data-testid="card-cafe-header">
           <h1 className="text-2xl font-bold text-foreground mb-2" data-testid="text-cafe-name">
