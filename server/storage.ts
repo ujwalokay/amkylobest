@@ -59,7 +59,7 @@ export class ExternalDbStorage implements IStorage {
       const activeBookings = await this.sql`
         SELECT category, seat_name, status
         FROM bookings
-        WHERE status = 'active'
+        WHERE status = 'running'
       `;
 
       // Calculate availability for each category
@@ -71,7 +71,7 @@ export class ExternalDbStorage implements IStorage {
         
         // Count active bookings for this category
         const occupiedSeats = activeBookings.filter(
-          (b: any) => b.category === category && b.status === 'active'
+          (b: any) => b.category === category && b.status === 'running'
         ).length;
         
         const availableSeats = totalSeats - occupiedSeats;
