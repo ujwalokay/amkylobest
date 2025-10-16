@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  ChevronLeft, 
+  RefreshCw, 
   Star, 
   MapPin, 
   Monitor, 
@@ -69,18 +69,28 @@ export default function CafePage() {
   const pcGames = cafe.games.filter(game => game.platform === "PC");
   const ps5Games = cafe.games.filter(game => game.platform === "PS5");
 
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Back Button */}
-      <div className="fixed top-4 left-4 z-50">
-        <Button 
-          size="icon" 
-          variant="secondary"
-          className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
-          data-testid="button-back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground" data-testid="text-powered-by">
+            Powered by <span className="font-semibold text-primary">Ankylo Gaming</span>
+          </div>
+          <Button 
+            size="icon" 
+            variant="secondary"
+            className="rounded-full"
+            data-testid="button-refresh"
+            onClick={handleRefresh}
+          >
+            <RefreshCw className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -203,7 +213,7 @@ export default function CafePage() {
         {/* Amenities Section */}
         <Card className="p-4 border-card-border" data-testid="card-amenities">
           <h2 className="text-lg font-semibold text-foreground mb-4">Amenities</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             {cafe.amenities.map((amenity) => {
               const Icon = getAmenityIcon(amenity.name);
               return (
@@ -230,7 +240,7 @@ export default function CafePage() {
         <div className="grid grid-cols-3 gap-2 p-3">
           <Button
             variant="outline"
-            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-chart-2/10 border-chart-2/30 hover:bg-chart-2/20"
+            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-chart-2/10 border-chart-2/30"
             data-testid="button-call"
             onClick={() => cafe.phoneNumber && window.open(`tel:${cafe.phoneNumber}`)}
           >
@@ -240,7 +250,7 @@ export default function CafePage() {
           
           <Button
             variant="outline"
-            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-success/10 border-success/30 hover:bg-success/20"
+            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-success/10 border-success/30"
             data-testid="button-whatsapp"
             onClick={() => cafe.whatsappNumber && window.open(`https://wa.me/${cafe.whatsappNumber}`)}
           >
@@ -250,7 +260,7 @@ export default function CafePage() {
           
           <Button
             variant="outline"
-            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-primary/10 border-primary/30 hover:bg-primary/20"
+            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-primary/10 border-primary/30"
             data-testid="button-map"
             onClick={() => cafe.mapUrl && window.open(cafe.mapUrl, '_blank')}
           >

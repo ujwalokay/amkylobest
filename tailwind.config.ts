@@ -84,6 +84,7 @@ export default {
         success: "hsl(140 65% 55% / <alpha-value>)",
         warning: "hsl(35 85% 60% / <alpha-value>)",
         whatsapp: "hsl(142 70% 45% / <alpha-value>)",
+        pink: "hsl(330 85% 60% / <alpha-value>)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

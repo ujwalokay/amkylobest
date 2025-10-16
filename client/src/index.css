@@ -132,64 +132,64 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 220 15% 8%;
+  --background: 260 40% 8%;
 
-  --foreground: 0 0% 95%;
+  --foreground: 0 0% 98%;
 
-  --border: 220 10% 18%;
+  --border: 260 30% 18%;
 
-  --card: 220 12% 12%;
+  --card: 260 35% 12%;
 
-  --card-foreground: 0 0% 95%;
+  --card-foreground: 0 0% 98%;
 
-  --card-border: 220 10% 20%;
+  --card-border: 260 30% 20%;
 
-  --sidebar: 220 12% 10%;
+  --sidebar: 260 35% 10%;
 
-  --sidebar-foreground: 0 0% 95%;
+  --sidebar-foreground: 0 0% 98%;
 
-  --sidebar-border: 220 10% 16%;
+  --sidebar-border: 260 30% 16%;
 
-  --sidebar-primary: 270 80% 65%;
+  --sidebar-primary: 280 85% 65%;
 
   --sidebar-primary-foreground: 0 0% 98%;
 
-  --sidebar-accent: 220 10% 16%;
+  --sidebar-accent: 260 30% 16%;
 
   --sidebar-accent-foreground: 0 0% 90%;
 
-  --sidebar-ring: 270 80% 65%;
+  --sidebar-ring: 280 85% 65%;
 
-  --popover: 220 12% 14%;
+  --popover: 260 35% 14%;
 
-  --popover-foreground: 0 0% 95%;
+  --popover-foreground: 0 0% 98%;
 
-  --popover-border: 220 10% 22%;
+  --popover-border: 260 30% 22%;
 
-  --primary: 270 80% 65%;
+  --primary: 280 85% 65%;
 
   --primary-foreground: 0 0% 98%;
 
-  --secondary: 220 10% 20%;
+  --secondary: 260 30% 20%;
 
-  --secondary-foreground: 0 0% 95%;
+  --secondary-foreground: 0 0% 98%;
 
-  --muted: 220 10% 18%;
+  --muted: 260 30% 18%;
 
-  --muted-foreground: 220 10% 65%;
+  --muted-foreground: 260 20% 65%;
 
-  --accent: 210 15% 18%;
+  --accent: 260 35% 18%;
 
-  --accent-foreground: 210 90% 85%;
+  --accent-foreground: 280 85% 85%;
 
   --destructive: 0 72% 51%;
 
   --destructive-foreground: 0 0% 98%;
 
   /* Used as the border around inputs. Dark mode: Should be a border that is light enough to have high contrast when rendered on a --card background. More contrast than standard --border */
-  --input: 220 10% 30%;
-  --ring: 270 80% 65%;
-  --chart-1: 270 80% 65%;
+  --input: 260 30% 30%;
+  --ring: 280 85% 65%;
+  --chart-1: 280 85% 65%;
   --chart-2: 210 90% 60%;
   --chart-3: 140 65% 55%;
   --chart-4: 35 85% 60%;
