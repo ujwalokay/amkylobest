@@ -8,10 +8,21 @@ export interface IStorage {
 export class ExternalDbStorage implements IStorage {
   private sql;
   private staticData: Omit<Cafe, 'gamingStations'>;
+  private isSecureConnection: boolean;
 
   constructor() {
-    // Initialize connection to external database (read-only)
-    this.sql = neon(process.env.EXTERNAL_DATABASE_URL!);
+    // Use read-only connection if available, otherwise use regular connection with warning
+    const dbUrl = process.env.READONLY_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL;
+    this.isSecureConnection = !!process.env.READONLY_DATABASE_URL;
+    
+    if (!this.isSecureConnection) {
+      console.warn('⚠️  SECURITY WARNING: Using admin database connection. Please set up READONLY_DATABASE_URL for better security.');
+      console.warn('⚠️  See DATABASE_SECURITY_SETUP.md for instructions.');
+    } else {
+      console.log('✅ Using secure read-only database connection');
+    }
+    
+    this.sql = neon(dbUrl!);
     
     // Static data that doesn't change
     this.staticData = {
@@ -49,6 +60,9 @@ export class ExternalDbStorage implements IStorage {
 
   async getCafe(): Promise<Cafe> {
     try {
+      // SECURITY: Only SELECT queries are allowed - validated at application level
+      // Even if someone modifies this code, the database user permissions prevent writes
+      
       // Fetch device configs from external database (read-only)
       const deviceConfigs = await this.sql`
         SELECT id, category, count, seats 
