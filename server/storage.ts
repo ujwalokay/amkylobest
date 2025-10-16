@@ -22,7 +22,10 @@ export class ExternalDbStorage implements IStorage {
       console.log('✅ Using secure read-only database connection');
     }
     
-    this.sql = neon(dbUrl!);
+    const baseSql = neon(dbUrl!);
+    
+    // Wrap SQL function with security validation
+    this.sql = this.createSecureSqlWrapper(baseSql);
     
     // Static data that doesn't change
     this.staticData = {
@@ -56,6 +59,63 @@ export class ExternalDbStorage implements IStorage {
         { id: "racing-sim", name: "Racing Simulators", icon: "car" }
       ]
     };
+  }
+
+  private createSecureSqlWrapper(baseSql: any) {
+    // Return a Proxy that validates ALL queries and blocks unsafe methods
+    return new Proxy(baseSql, {
+      apply: (target, thisArg, args) => {
+        // Get the query string from template literal
+        const queryTemplate = args[0];
+        if (Array.isArray(queryTemplate) && 'raw' in queryTemplate) {
+          const queryString = queryTemplate.join('?').trim().toUpperCase();
+          
+          // Validate query is SELECT only
+          if (!queryString.startsWith('SELECT')) {
+            const error = new Error('SECURITY BLOCK: Only SELECT queries allowed. Attempted: ' + queryString.substring(0, 50));
+            console.error('🚨 SECURITY VIOLATION BLOCKED:', error.message);
+            throw error;
+          }
+          
+          // Block dangerous keywords even in SELECT
+          const dangerousKeywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'TRUNCATE', 'ALTER', 'CREATE', 'GRANT', 'REVOKE', 'EXEC'];
+          for (const keyword of dangerousKeywords) {
+            if (queryString.includes(keyword)) {
+              const error = new Error(`SECURITY BLOCK: Forbidden keyword ${keyword} in query`);
+              console.error('🚨 SECURITY VIOLATION BLOCKED:', error.message);
+              throw error;
+            }
+          }
+        }
+        
+        // Query is safe, execute it
+        return Reflect.apply(target, thisArg, args);
+      },
+      
+      // Block access to potentially dangerous methods like .unsafe(), .transaction(), etc.
+      get: (target, prop) => {
+        const blockedMethods = ['unsafe', 'transaction', 'begin', 'commit', 'rollback'];
+        if (blockedMethods.includes(prop as string)) {
+          const error = new Error(`SECURITY BLOCK: Method .${String(prop)}() is not allowed in read-only mode`);
+          console.error('🚨 SECURITY VIOLATION BLOCKED:', error.message);
+          throw error;
+        }
+        
+        const value = Reflect.get(target, prop);
+        
+        // If it's a function, wrap it with the same security check
+        if (typeof value === 'function') {
+          return new Proxy(value, {
+            apply: (fnTarget, fnThisArg, fnArgs) => {
+              console.error('🚨 SECURITY WARNING: Attempting to call method .' + String(prop) + '() - this may bypass security');
+              throw new Error(`SECURITY BLOCK: Method .${String(prop)}() is blocked for security`);
+            }
+          });
+        }
+        
+        return value;
+      }
+    });
   }
 
   async getCafe(): Promise<Cafe> {
