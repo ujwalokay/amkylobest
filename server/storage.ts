@@ -116,32 +116,7 @@ export class ExternalDbStorage implements IStorage {
         });
       }
 
-      // Add VR and Racing Sim with default values if not in database
-      const hasVR = gamingStations.some(s => s.type === "VR");
-      const hasRacing = gamingStations.some(s => s.type === "Racing Sim");
-
-      if (!hasVR) {
-        gamingStations.push({
-          id: "vr",
-          type: "VR",
-          available: 2,
-          total: 3,
-          status: "Available Now",
-          icon: "headset"
-        });
-      }
-
-      if (!hasRacing) {
-        gamingStations.push({
-          id: "racing",
-          type: "Racing Sim",
-          available: 1,
-          total: 2,
-          status: "Available Now",
-          icon: "car"
-        });
-      }
-
+      // Only show gaming stations that exist in the database
       return {
         ...this.staticData,
         gamingStations
