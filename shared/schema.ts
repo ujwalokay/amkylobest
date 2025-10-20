@@ -47,3 +47,26 @@ export const cafeSchema = z.object({
 });
 
 export type Cafe = z.infer<typeof cafeSchema>;
+
+// Tournament Registration Schema
+export const tournamentRegistrationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  gamePreference: z.string().min(1, "Please select a game"),
+});
+
+export type TournamentRegistration = z.infer<typeof tournamentRegistrationSchema>;
+
+// Tournament Ticket Schema
+export const tournamentTicketSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string(),
+  phone: z.string(),
+  gamePreference: z.string(),
+  ticketNumber: z.string(),
+  createdAt: z.string(),
+});
+
+export type TournamentTicket = z.infer<typeof tournamentTicketSchema>;
