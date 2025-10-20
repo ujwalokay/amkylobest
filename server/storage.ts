@@ -11,18 +11,24 @@ export class ExternalDbStorage implements IStorage {
   private isSecureConnection: boolean;
 
   constructor() {
-    // Use read-only connection if available, otherwise use regular connection with warning
-    const dbUrl = process.env.READONLY_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL;
+    // Use Replit's built-in database or read-only connection if available
+    const dbUrl = process.env.READONLY_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL || process.env.DATABASE_URL;
     this.isSecureConnection = !!process.env.READONLY_DATABASE_URL;
     
-    if (!this.isSecureConnection) {
+    if (!dbUrl) {
+      throw new Error('No database connection string available. Please ensure DATABASE_URL is set.');
+    }
+    
+    if (!this.isSecureConnection && !process.env.DATABASE_URL) {
       console.warn('⚠️  SECURITY WARNING: Using admin database connection. Please set up READONLY_DATABASE_URL for better security.');
       console.warn('⚠️  See DATABASE_SECURITY_SETUP.md for instructions.');
+    } else if (process.env.DATABASE_URL && !process.env.READONLY_DATABASE_URL) {
+      console.log('✅ Using Replit built-in database connection');
     } else {
       console.log('✅ Using secure read-only database connection');
     }
     
-    const baseSql = neon(dbUrl!);
+    const baseSql = neon(dbUrl);
     
     // Wrap SQL function with security validation
     this.sql = this.createSecureSqlWrapper(baseSql);
