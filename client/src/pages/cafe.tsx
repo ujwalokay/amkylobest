@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.pn
 import { TournamentRegistration } from "@/components/tournament-registration";
 
 export default function CafePage() {
+  const [, setLocation] = useLocation();
   const { data: cafe, isLoading } = useQuery<Cafe>({
     queryKey: ["/api/cafe"],
   });
@@ -95,15 +97,34 @@ export default function CafePage() {
           <div className="text-sm text-muted-foreground" data-testid="text-powered-by">
             Powered by <span className="font-semibold text-primary">Ankylo Gaming</span>
           </div>
-          <Button 
-            size="icon" 
-            variant="secondary"
-            className="rounded-full"
-            data-testid="button-refresh"
-            onClick={handleRefresh}
-          >
-            <RefreshCw className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => setLocation("/tournaments")}
+              className="hidden sm:flex"
+            >
+              <Trophy className="mr-2 h-4 w-4" />
+              Tournaments
+            </Button>
+            <Button 
+              size="icon" 
+              variant="secondary"
+              className="rounded-full sm:hidden"
+              onClick={() => setLocation("/tournaments")}
+            >
+              <Trophy className="h-5 w-5" />
+            </Button>
+            <Button 
+              size="icon" 
+              variant="secondary"
+              className="rounded-full"
+              data-testid="button-refresh"
+              onClick={handleRefresh}
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -48,8 +48,37 @@ export const cafeSchema = z.object({
 
 export type Cafe = z.infer<typeof cafeSchema>;
 
+// Tournament Schema
+export const tournamentSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  game: z.string(),
+  description: z.string().optional(),
+  startDate: z.string(),
+  maxParticipants: z.number(),
+  prizePool: z.string().optional(),
+  status: z.enum(["upcoming", "ongoing", "completed"]),
+  createdAt: z.string(),
+  participantCount: z.number().optional(),
+});
+
+export type Tournament = z.infer<typeof tournamentSchema>;
+
+// Tournament Creation Schema
+export const tournamentCreationSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  game: z.string().min(1, "Please select a game"),
+  description: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required"),
+  maxParticipants: z.coerce.number().min(2, "Must have at least 2 participants"),
+  prizePool: z.string().optional(),
+});
+
+export type TournamentCreation = z.infer<typeof tournamentCreationSchema>;
+
 // Tournament Registration Schema
 export const tournamentRegistrationSchema = z.object({
+  tournamentId: z.number(),
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
@@ -61,6 +90,7 @@ export type TournamentRegistration = z.infer<typeof tournamentRegistrationSchema
 // Tournament Ticket Schema
 export const tournamentTicketSchema = z.object({
   id: z.number(),
+  tournamentId: z.number(),
   name: z.string(),
   email: z.string(),
   phone: z.string(),

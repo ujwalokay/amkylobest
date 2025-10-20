@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { neon } from "@neondatabase/serverless";
-import { tournamentRegistrationSchema } from "@shared/schema";
+import { tournamentRegistrationSchema, tournamentCreationSchema } from "@shared/schema";
 import { generateTicketSVG, generateRandomTicketNumber } from "./ticket-generator";
 import { sendTournamentTicketEmail } from "./email-service";
 
@@ -19,11 +19,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create tournament
+  app.post("/api/tournaments", async (req, res) => {
+    try {
+      const validatedData = tournamentCreationSchema.parse(req.body);
+      
+      const result = await sql`
+        INSERT INTO tournaments (
+          title, game, description, start_date, max_participants, prize_pool, status
+        ) VALUES (
+          ${validatedData.title},
+          ${validatedData.game},
+          ${validatedData.description || null},
+          ${validatedData.startDate},
+          ${validatedData.maxParticipants},
+          ${validatedData.prizePool || null},
+          'upcoming'
+        )
+        RETURNING id, title, game, description, 
+                  start_date as "startDate", max_participants as "maxParticipants",
+                  prize_pool as "prizePool", status, created_at as "createdAt"
+      `;
+      
+      const tournament = result[0];
+      res.json({
+        ...tournament,
+        startDate: new Date(tournament.startDate).toISOString(),
+        createdAt: new Date(tournament.createdAt).toISOString(),
+        participantCount: 0,
+      });
+    } catch (error: any) {
+      console.error("Tournament creation error:", error);
+      if (error.name === "ZodError") {
+        return res.status(400).json({ error: "Invalid tournament data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create tournament" });
+    }
+  });
+
+  // Get all tournaments
+  app.get("/api/tournaments", async (_req, res) => {
+    try {
+      const tournaments = await sql`
+        SELECT 
+          t.id, 
+          t.title, 
+          t.game, 
+          t.description, 
+          t.start_date as "startDate",
+          t.max_participants as "maxParticipants",
+          t.prize_pool as "prizePool",
+          t.status,
+          t.created_at as "createdAt",
+          COUNT(tr.id) as "participantCount"
+        FROM tournaments t
+        LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
+        GROUP BY t.id
+        ORDER BY t.start_date ASC
+      `;
+      
+      res.json(tournaments.map(t => ({
+        ...t,
+        startDate: new Date(t.startDate).toISOString(),
+        createdAt: new Date(t.createdAt).toISOString(),
+        participantCount: parseInt(t.participantCount as string),
+      })));
+    } catch (error) {
+      console.error("Get tournaments error:", error);
+      res.status(500).json({ error: "Failed to fetch tournaments" });
+    }
+  });
+
+  // Get tournament by ID
+  app.get("/api/tournaments/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const result = await sql`
+        SELECT 
+          t.id, 
+          t.title, 
+          t.game, 
+          t.description, 
+          t.start_date as "startDate",
+          t.max_participants as "maxParticipants",
+          t.prize_pool as "prizePool",
+          t.status,
+          t.created_at as "createdAt",
+          COUNT(tr.id) as "participantCount"
+        FROM tournaments t
+        LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
+        WHERE t.id = ${id}
+        GROUP BY t.id
+      `;
+      
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Tournament not found" });
+      }
+      
+      const tournament = result[0];
+      res.json({
+        ...tournament,
+        startDate: new Date(tournament.startDate).toISOString(),
+        createdAt: new Date(tournament.createdAt).toISOString(),
+        participantCount: parseInt(tournament.participantCount as string),
+      });
+    } catch (error) {
+      console.error("Get tournament error:", error);
+      res.status(500).json({ error: "Failed to fetch tournament" });
+    }
+  });
+
   // Register for tournament
   app.post("/api/tournament/register", async (req, res) => {
     try {
       // Validate request body
       const validatedData = tournamentRegistrationSchema.parse(req.body);
+      
+      // Check if tournament exists and has space
+      const tournamentCheck = await sql`
+        SELECT 
+          t.id, 
+          t.max_participants as "maxParticipants",
+          COUNT(tr.id) as "participantCount"
+        FROM tournaments t
+        LEFT JOIN tournament_registrations tr ON t.id = tr.tournament_id
+        WHERE t.id = ${validatedData.tournamentId}
+        GROUP BY t.id
+      `;
+      
+      if (tournamentCheck.length === 0) {
+        return res.status(404).json({ error: "Tournament not found" });
+      }
+      
+      const tournament = tournamentCheck[0];
+      const currentParticipants = parseInt(tournament.participantCount as string);
+      
+      if (currentParticipants >= tournament.maxParticipants) {
+        return res.status(400).json({ error: "Tournament is full" });
+      }
       
       // Generate unique ticket number
       let ticketNumber = generateRandomTicketNumber();
@@ -51,15 +185,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Insert registration
       const result = await sql`
         INSERT INTO tournament_registrations (
-          name, email, phone, game_preference, ticket_number
+          tournament_id, name, email, phone, game_preference, ticket_number
         ) VALUES (
+          ${validatedData.tournamentId},
           ${validatedData.name},
           ${validatedData.email},
           ${validatedData.phone},
           ${validatedData.gamePreference},
           ${ticketNumber}
         )
-        RETURNING id, name, email, phone, game_preference as "gamePreference", 
+        RETURNING id, tournament_id as "tournamentId", name, email, phone, 
+                  game_preference as "gamePreference", 
                   ticket_number as "ticketNumber", created_at as "createdAt"
       `;
       
@@ -69,6 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate ticket SVG
       const ticketSVG = generateTicketSVG({
         id: ticket.id,
+        tournamentId: ticket.tournamentId,
         name: ticket.name,
         email: ticket.email,
         phone: ticket.phone,
@@ -81,6 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sendTournamentTicketEmail(
         {
           id: ticket.id,
+          tournamentId: ticket.tournamentId,
           name: ticket.name,
           email: ticket.email,
           phone: ticket.phone,
@@ -125,7 +263,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { ticketNumber } = req.params;
       
       const result = await sql`
-        SELECT id, name, email, phone, game_preference as "gamePreference", 
+        SELECT id, tournament_id as "tournamentId", name, email, phone, 
+               game_preference as "gamePreference", 
                ticket_number as "ticketNumber", created_at as "createdAt"
         FROM tournament_registrations 
         WHERE ticket_number = ${ticketNumber}
@@ -140,6 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const ticketSVG = generateTicketSVG({
         id: ticket.id,
+        tournamentId: ticket.tournamentId,
         name: ticket.name,
         email: ticket.email,
         phone: ticket.phone,
@@ -167,7 +307,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { ticketNumber } = req.params;
       
       const result = await sql`
-        SELECT id, name, email, phone, game_preference as "gamePreference", 
+        SELECT id, tournament_id as "tournamentId", name, email, phone, 
+               game_preference as "gamePreference", 
                ticket_number as "ticketNumber", created_at as "createdAt"
         FROM tournament_registrations 
         WHERE ticket_number = ${ticketNumber}
@@ -182,6 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const ticketSVG = generateTicketSVG({
         id: ticket.id,
+        tournamentId: ticket.tournamentId,
         name: ticket.name,
         email: ticket.email,
         phone: ticket.phone,
