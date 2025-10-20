@@ -64,6 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
       
       const ticket = result[0];
+      const createdAtString = new Date(ticket.createdAt).toISOString();
       
       // Generate ticket SVG
       const ticketSVG = generateTicketSVG({
@@ -73,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: ticket.phone,
         gamePreference: ticket.gamePreference,
         ticketNumber: ticket.ticketNumber,
-        createdAt: ticket.createdAt.toISOString(),
+        createdAt: createdAtString,
       });
       
       // Send email with ticket (async, don't wait for it)
@@ -85,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: ticket.phone,
           gamePreference: ticket.gamePreference,
           ticketNumber: ticket.ticketNumber,
-          createdAt: ticket.createdAt.toISOString(),
+          createdAt: createdAtString,
         },
         ticketSVG
       ).then((emailResult) => {
@@ -105,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         ticket: {
           ...ticket,
-          createdAt: ticket.createdAt.toISOString(),
+          createdAt: createdAtString,
         },
         ticketSVG,
       });
@@ -135,6 +136,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const ticket = result[0];
+      const createdAtString = new Date(ticket.createdAt).toISOString();
+      
       const ticketSVG = generateTicketSVG({
         id: ticket.id,
         name: ticket.name,
@@ -142,13 +145,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: ticket.phone,
         gamePreference: ticket.gamePreference,
         ticketNumber: ticket.ticketNumber,
-        createdAt: ticket.createdAt.toISOString(),
+        createdAt: createdAtString,
       });
       
       res.json({
         ticket: {
           ...ticket,
-          createdAt: ticket.createdAt.toISOString(),
+          createdAt: createdAtString,
         },
         ticketSVG,
       });
@@ -175,6 +178,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const ticket = result[0];
+      const createdAtString = new Date(ticket.createdAt).toISOString();
+      
       const ticketSVG = generateTicketSVG({
         id: ticket.id,
         name: ticket.name,
@@ -182,7 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: ticket.phone,
         gamePreference: ticket.gamePreference,
         ticketNumber: ticket.ticketNumber,
-        createdAt: ticket.createdAt.toISOString(),
+        createdAt: createdAtString,
       });
       
       res.setHeader('Content-Type', 'image/svg+xml');
