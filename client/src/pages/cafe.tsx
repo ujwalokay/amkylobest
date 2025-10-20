@@ -15,7 +15,8 @@ import {
   Wifi,
   Wind,
   Coffee,
-  Dribbble
+  Dribbble,
+  Trophy
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import useEmblaCarousel from "embla-carousel-react";
@@ -23,6 +24,7 @@ import type { Cafe } from "@shared/schema";
 import pcSetupImg from "@assets/generated_images/Gaming_cafe_PC_setup_interior_7936e5eb.png";
 import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_8b8e7595.png";
 import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.png";
+import { TournamentRegistration } from "@/components/tournament-registration";
 
 export default function CafePage() {
   const { data: cafe, isLoading } = useQuery<Cafe>({
@@ -236,6 +238,18 @@ export default function CafePage() {
               </div>
             </div>
           )}
+        </Card>
+
+        {/* Tournament Section */}
+        <Card className="p-4 border-card-border bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30" data-testid="card-tournament">
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy className="h-5 w-5 text-purple-600" />
+            <h2 className="text-lg font-semibold text-foreground">Gaming Tournament</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            Join our exciting gaming tournament! Register now to compete with other players and win amazing prizes. Get your unique tournament ticket instantly.
+          </p>
+          <TournamentRegistration />
         </Card>
 
         {/* Amenities Section */}
