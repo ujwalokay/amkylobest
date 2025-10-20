@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { neon } from "@neondatabase/serverless";
 import { tournamentRegistrationSchema } from "@shared/schema";
 import { generateTicketSVG, generateRandomTicketNumber } from "./ticket-generator";
+import { sendTournamentTicketEmail } from "./email-service";
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -73,6 +74,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gamePreference: ticket.gamePreference,
         ticketNumber: ticket.ticketNumber,
         createdAt: ticket.createdAt.toISOString(),
+      });
+      
+      // Send email with ticket (async, don't wait for it)
+      sendTournamentTicketEmail(
+        {
+          id: ticket.id,
+          name: ticket.name,
+          email: ticket.email,
+          phone: ticket.phone,
+          gamePreference: ticket.gamePreference,
+          ticketNumber: ticket.ticketNumber,
+          createdAt: ticket.createdAt.toISOString(),
+        },
+        ticketSVG
+      ).then((emailResult) => {
+        if (emailResult.success) {
+          console.log(`Email sent successfully to ${ticket.email}`);
+          sql`UPDATE tournament_registrations SET ticket_sent = true WHERE id = ${ticket.id}`.catch(
+            (err) => console.error("Failed to update ticket_sent status:", err)
+          );
+        } else {
+          console.error(`Failed to send email to ${ticket.email}:`, emailResult.message);
+        }
+      }).catch((err) => {
+        console.error("Error in email sending process:", err);
       });
       
       res.json({
