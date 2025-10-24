@@ -30,6 +30,7 @@ import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_
 import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.png";
 import { SplashScreen } from "@/components/SplashScreen";
 import { InstagramFollowPopup } from "@/components/InstagramFollowPopup";
+import { ShareDialog } from "@/components/ShareDialog";
 
 export default function CafePage() {
   const { data: cafe, isLoading } = useQuery<Cafe>({
@@ -38,6 +39,7 @@ export default function CafePage() {
 
   const [showSplash, setShowSplash] = useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
@@ -123,38 +125,8 @@ export default function CafePage() {
     window.location.reload();
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${cafe?.name} - Gaming Cafe`,
-          text: `Check out ${cafe?.name} - Premium gaming cafe`,
-          url: url
-        });
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          copyToClipboard(url);
-        }
-      }
-    } else {
-      copyToClipboard(url);
-    }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      alert('Link copied to clipboard!');
-    }).catch(() => {
-      const tempInput = document.createElement('input');
-      tempInput.value = text;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      alert('Link copied to clipboard!');
-    });
+  const handleShare = () => {
+    setShowShareDialog(true);
   };
 
   return (
@@ -470,6 +442,14 @@ export default function CafePage() {
 
       {/* Instagram Follow Popup */}
       <InstagramFollowPopup />
+
+      {/* Share Dialog */}
+      <ShareDialog 
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        cafeName={cafe.name}
+        url={window.location.href}
+      />
     </div>
   );
 }
