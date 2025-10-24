@@ -84,10 +84,7 @@ export class ExternalDbStorage implements IStorage {
         { day: "Friday", openTime: "10:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Extended Hours" },
         { day: "Saturday", openTime: "9:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Peak Day" },
         { day: "Sunday", openTime: "9:00 AM", closeTime: "12:00 AM", isPeakHours: true, note: "Peak Day" }
-      ],
-      peakHoursInfo: this.isCurrentlyPeakHours() 
-        ? "🔥 PEAK HOURS NOW - Higher demand expected (Friday-Sunday 6:00 PM - 11:00 PM)"
-        : "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM"
+      ]
     };
   }
 
@@ -223,13 +220,19 @@ export class ExternalDbStorage implements IStorage {
       // Only show gaming stations that exist in the database
       return {
         ...this.staticData,
-        gamingStations
+        gamingStations,
+        peakHoursInfo: this.isCurrentlyPeakHours() 
+          ? "🔥 PEAK HOURS NOW - Higher demand expected (Friday-Sunday 6:00 PM - 11:00 PM)"
+          : "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM"
       };
     } catch (error) {
       console.error("Error fetching from external database:", error);
       // Fallback to default values if database is unavailable
       return {
         ...this.staticData,
+        peakHoursInfo: this.isCurrentlyPeakHours() 
+          ? "🔥 PEAK HOURS NOW - Higher demand expected (Friday-Sunday 6:00 PM - 11:00 PM)"
+          : "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM",
         gamingStations: [
           {
             id: "pc",
