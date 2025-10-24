@@ -30,6 +30,17 @@ export const amenitySchema = z.object({
 
 export type Amenity = z.infer<typeof amenitySchema>;
 
+// Schedule Schema
+export const scheduleSchema = z.object({
+  day: z.string(),
+  openTime: z.string(),
+  closeTime: z.string(),
+  isPeakHours: z.boolean().optional(),
+  note: z.string().optional(),
+});
+
+export type Schedule = z.infer<typeof scheduleSchema>;
+
 // Cafe Schema
 export const cafeSchema = z.object({
   id: z.string(),
@@ -44,6 +55,8 @@ export const cafeSchema = z.object({
   phoneNumber: z.string().optional(),
   whatsappNumber: z.string().optional(),
   mapUrl: z.string().optional(),
+  schedule: z.array(scheduleSchema).optional(),
+  peakHoursInfo: z.string().optional(),
 });
 
 export type Cafe = z.infer<typeof cafeSchema>;

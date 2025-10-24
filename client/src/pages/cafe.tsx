@@ -15,7 +15,9 @@ import {
   Wifi,
   Wind,
   Coffee,
-  Dribbble
+  Dribbble,
+  Clock,
+  Calendar
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import useEmblaCarousel from "embla-carousel-react";
@@ -185,6 +187,67 @@ export default function CafePage() {
             {cafe.about}
           </p>
         </Card>
+
+        {/* Operating Hours Schedule */}
+        {cafe.schedule && cafe.schedule.length > 0 && (
+          <Card className="p-4 border-card-border" data-testid="card-schedule">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Operating Hours</h2>
+            </div>
+            
+            <div className="space-y-2">
+              {cafe.schedule.map((schedule, index) => {
+                const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+                const isToday = schedule.day === today;
+                
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
+                      isToday 
+                        ? 'bg-primary/10 border border-primary/20' 
+                        : 'bg-secondary/5'
+                    }`}
+                    data-testid={`schedule-${schedule.day.toLowerCase()}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className={`text-sm font-medium ${isToday ? 'text-primary' : 'text-foreground'}`}>
+                        {schedule.day}
+                        {isToday && (
+                          <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
+                            Today
+                          </Badge>
+                        )}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {schedule.openTime} - {schedule.closeTime}
+                      </span>
+                      {schedule.isPeakHours && (
+                        <Badge variant="secondary" className="text-xs bg-warning/20 text-warning border-warning/30">
+                          Peak
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {cafe.peakHoursInfo && (
+              <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                <p className="text-xs text-muted-foreground flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5" />
+                  {cafe.peakHoursInfo}
+                </p>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Available Games Section */}
         <Card className="p-4 border-card-border" data-testid="card-available-games">

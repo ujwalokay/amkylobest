@@ -63,7 +63,17 @@ export class ExternalDbStorage implements IStorage {
         { id: "headsets", name: "Premium Headsets", icon: "headset" },
         { id: "vr-gaming", name: "VR Gaming", icon: "headset" },
         { id: "racing-sim", name: "Racing Simulators", icon: "car" }
-      ]
+      ],
+      schedule: [
+        { day: "Monday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+        { day: "Tuesday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+        { day: "Wednesday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+        { day: "Thursday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+        { day: "Friday", openTime: "10:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Extended Hours" },
+        { day: "Saturday", openTime: "9:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Peak Day" },
+        { day: "Sunday", openTime: "9:00 AM", closeTime: "12:00 AM", isPeakHours: true, note: "Peak Day" }
+      ],
+      peakHoursInfo: "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM"
     };
   }
 
