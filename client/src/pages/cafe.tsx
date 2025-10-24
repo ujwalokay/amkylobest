@@ -198,8 +198,15 @@ export default function CafePage() {
             
             <div className="space-y-2">
               {cafe.schedule.map((schedule, index) => {
-                const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+                const now = new Date();
+                const today = now.toLocaleDateString('en-US', { weekday: 'long' });
                 const isToday = schedule.day === today;
+                
+                // Check if it's currently peak hours (only show on today during 6 PM - 11 PM)
+                const hour = now.getHours();
+                const isPeakDay = schedule.day === 'Friday' || schedule.day === 'Saturday' || schedule.day === 'Sunday';
+                const isPeakTime = hour >= 18 && hour < 23;
+                const showPeakNow = isToday && isPeakDay && isPeakTime;
                 
                 return (
                   <div
@@ -227,9 +234,9 @@ export default function CafePage() {
                       <span className="text-sm text-muted-foreground">
                         {schedule.openTime} - {schedule.closeTime}
                       </span>
-                      {schedule.isPeakHours && (
+                      {showPeakNow && (
                         <Badge variant="secondary" className="text-xs bg-warning/20 text-warning border-warning/30">
-                          Peak
+                          Peak Now
                         </Badge>
                       )}
                     </div>
