@@ -17,7 +17,8 @@ import {
   Coffee,
   Dribbble,
   Clock,
-  Calendar
+  Calendar,
+  Share2
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import useEmblaCarousel from "embla-carousel-react";
@@ -122,6 +123,40 @@ export default function CafePage() {
     window.location.reload();
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${cafe?.name} - Gaming Cafe`,
+          text: `Check out ${cafe?.name} - Premium gaming cafe`,
+          url: url
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          copyToClipboard(url);
+        }
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Link copied to clipboard!');
+    }).catch(() => {
+      const tempInput = document.createElement('input');
+      tempInput.value = text;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert('Link copied to clipboard!');
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -130,15 +165,26 @@ export default function CafePage() {
           <div className="text-sm text-muted-foreground" data-testid="text-powered-by">
             Powered by <span className="font-semibold text-primary">Airavoto Gaming</span>
           </div>
-          <Button 
-            size="icon" 
-            variant="secondary"
-            className="rounded-full"
-            data-testid="button-refresh"
-            onClick={handleRefresh}
-          >
-            <RefreshCw className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              size="icon" 
+              variant="secondary"
+              className="rounded-full"
+              data-testid="button-share"
+              onClick={handleShare}
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+            <Button 
+              size="icon" 
+              variant="secondary"
+              className="rounded-full"
+              data-testid="button-refresh"
+              onClick={handleRefresh}
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
