@@ -27,11 +27,15 @@ import type { Cafe } from "@shared/schema";
 import pcSetupImg from "@assets/generated_images/Gaming_cafe_PC_setup_interior_7936e5eb.png";
 import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_8b8e7595.png";
 import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.png";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export default function CafePage() {
   const { data: cafe, isLoading } = useQuery<Cafe>({
     queryKey: ["/api/cafe"],
   });
+
+  const [showSplash, setShowSplash] = useState(true);
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
@@ -60,12 +64,21 @@ export default function CafePage() {
     };
   }, [emblaApi]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinTimeElapsed(true);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && minTimeElapsed) {
+      setShowSplash(false);
+    }
+  }, [isLoading, minTimeElapsed]);
+
+  if (showSplash) {
+    return <SplashScreen />;
   }
 
   if (!cafe) {
