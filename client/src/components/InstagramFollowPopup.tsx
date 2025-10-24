@@ -61,6 +61,9 @@ export function InstagramFollowPopup() {
   
   const instagramAccount1 = extractUsername(account1Raw);
   const instagramAccount2 = extractUsername(account2Raw);
+  
+  const profileImage1 = import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_1 || `https://unavatar.io/instagram/${instagramAccount1}`;
+  const profileImage2 = import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_2 || `https://unavatar.io/instagram/${instagramAccount2}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -85,7 +88,7 @@ export function InstagramFollowPopup() {
               >
                 <div className="relative flex-shrink-0">
                   <img
-                    src={`https://unavatar.io/instagram/${instagramAccount1}`}
+                    src={profileImage1}
                     alt={instagramAccount1}
                     className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-purple-500 object-cover"
                     onError={(e) => {
@@ -114,7 +117,7 @@ export function InstagramFollowPopup() {
               >
                 <div className="relative flex-shrink-0">
                   <img
-                    src={`https://unavatar.io/instagram/${instagramAccount2}`}
+                    src={profileImage2}
                     alt={instagramAccount2}
                     className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-purple-500 object-cover"
                     onError={(e) => {
@@ -173,7 +176,7 @@ export function InstagramFollowPopup() {
             <div className="flex justify-center gap-3 sm:gap-4">
               <div className="text-center">
                 <img
-                  src={`https://unavatar.io/instagram/${instagramAccount1}`}
+                  src={profileImage1}
                   alt={instagramAccount1}
                   className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-purple-500 shadow-lg mx-auto mb-1"
                   onError={(e) => {
@@ -185,7 +188,7 @@ export function InstagramFollowPopup() {
               </div>
               <div className="text-center">
                 <img
-                  src={`https://unavatar.io/instagram/${instagramAccount2}`}
+                  src={profileImage2}
                   alt={instagramAccount2}
                   className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-purple-500 shadow-lg mx-auto mb-1"
                   onError={(e) => {
