@@ -8,9 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Instagram, Heart } from "lucide-react";
+import profile1Image from "@assets/475080788_1802201263956230_401134908481221795_n_1761328470318.jpg";
+import profile2Image from "@assets/356898138_816594496799856_6448100693544446739_n_1761328475220.jpeg";
 
-const getProfileImageSources = (username: string, customUrl?: string) => {
+const getProfileImageSources = (username: string, uploadedImage: string, customUrl?: string) => {
   const sources = [];
+  
+  sources.push(uploadedImage);
   
   if (customUrl) {
     sources.push(customUrl);
@@ -82,11 +86,13 @@ export function InstagramFollowPopup() {
   const instagramAccount2 = extractUsername(account2Raw);
   
   const profileImageSources1 = getProfileImageSources(
-    instagramAccount1, 
+    instagramAccount1,
+    profile1Image,
     import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_1
   );
   const profileImageSources2 = getProfileImageSources(
-    instagramAccount2, 
+    instagramAccount2,
+    profile2Image,
     import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_2
   );
   
