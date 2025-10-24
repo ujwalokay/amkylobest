@@ -20,6 +20,20 @@ export function InstagramFollowPopup() {
     }
   }, []);
 
+  const extractUsername = (urlOrUsername: string): string => {
+    if (!urlOrUsername) return "";
+    
+    try {
+      const url = new URL(urlOrUsername);
+      const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+      return pathParts[0] || "";
+    } catch {
+      const cleaned = urlOrUsername.replace('@', '').trim();
+      const pathParts = cleaned.split('/').filter(part => part.length > 0);
+      return pathParts[0] || cleaned;
+    }
+  };
+
   const handleContinue = () => {
     setShowThankYou(true);
     setTimeout(() => {
@@ -29,8 +43,11 @@ export function InstagramFollowPopup() {
     }, 2500);
   };
 
-  const instagramAccount1 = import.meta.env.VITE_INSTAGRAM_ACCOUNT_1 || "gamezone.arena";
-  const instagramAccount2 = import.meta.env.VITE_INSTAGRAM_ACCOUNT_2 || "airavoto.gaming";
+  const account1Raw = import.meta.env.VITE_INSTAGRAM_ACCOUNT_1 || "gamezone.arena";
+  const account2Raw = import.meta.env.VITE_INSTAGRAM_ACCOUNT_2 || "airavoto.gaming";
+  
+  const instagramAccount1 = extractUsername(account1Raw);
+  const instagramAccount2 = extractUsername(account2Raw);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
