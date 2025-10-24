@@ -14,10 +14,18 @@ export function InstagramFollowPopup() {
   const [showThankYou, setShowThankYou] = useState(false);
   
   useEffect(() => {
-    const hasSeenPopup = localStorage.getItem("instagram-follow-popup-seen");
-    if (!hasSeenPopup) {
-      setIsOpen(true);
+    const dismissedUntil = localStorage.getItem("instagram-popup-dismissed-until");
+    
+    if (dismissedUntil) {
+      const dismissedTime = parseInt(dismissedUntil, 10);
+      const now = Date.now();
+      
+      if (now < dismissedTime) {
+        return;
+      }
     }
+    
+    setIsOpen(true);
   }, []);
 
   const extractUsername = (urlOrUsername: string): string => {
@@ -37,10 +45,15 @@ export function InstagramFollowPopup() {
   const handleContinue = () => {
     setShowThankYou(true);
     setTimeout(() => {
-      localStorage.setItem("instagram-follow-popup-seen", "true");
       setIsOpen(false);
       setShowThankYou(false);
     }, 2500);
+  };
+
+  const handleDontShowAgain = () => {
+    const tenMinutesFromNow = Date.now() + (10 * 60 * 1000);
+    localStorage.setItem("instagram-popup-dismissed-until", tenMinutesFromNow.toString());
+    setIsOpen(false);
   };
 
   const account1Raw = import.meta.env.VITE_INSTAGRAM_ACCOUNT_1 || "gamezone.arena";
@@ -122,12 +135,20 @@ export function InstagramFollowPopup() {
                 <Instagram className="h-5 w-5 text-purple-500 flex-shrink-0" />
               </a>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
                 <Button
                   onClick={handleContinue}
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-5 sm:py-6 text-sm sm:text-base rounded-xl"
                 >
                   I've Followed Both - Continue
+                </Button>
+                
+                <Button
+                  onClick={handleDontShowAgain}
+                  variant="ghost"
+                  className="w-full text-xs sm:text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Don't show again for 10 minutes
                 </Button>
               </div>
 
