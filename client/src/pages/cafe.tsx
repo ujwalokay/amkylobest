@@ -238,7 +238,7 @@ export default function CafePage() {
               })}
             </div>
             
-            {cafe.peakHoursInfo && (
+            {cafe.peakHoursInfo && cafe.peakHoursInfo.includes("🔥") && (
               <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
                 <p className="text-xs text-muted-foreground flex items-center gap-2">
                   <Clock className="h-3.5 w-3.5" />
