@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from "react";
 import type { Cafe } from "@shared/schema";
 import pcSetupImg from "@assets/generated_images/Gaming_cafe_PC_setup_interior_7936e5eb.png";
 import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_8b8e7595.png";
@@ -31,13 +33,32 @@ export default function CafePage() {
     queryKey: ["/api/cafe"],
   });
 
-  const [emblaRef] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true },
+    [Autoplay({ delay: 3000, stopOnInteraction: false })]
+  );
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const cafeImages = [
     { src: pcSetupImg, alt: "Gaming PC Setup" },
     { src: consoleAreaImg, alt: "Console Gaming Area" },
     { src: vrZoneImg, alt: "VR Gaming Zone" }
   ];
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+    };
+
+    emblaApi.on("select", onSelect);
+    onSelect();
+
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi]);
 
   if (isLoading) {
     return (
@@ -93,7 +114,7 @@ export default function CafePage() {
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground" data-testid="text-powered-by">
-            Powered by <span className="font-semibold text-primary">Ankylo Gaming</span>
+            Powered by <span className="font-semibold text-primary">Airavoto Gaming</span>
           </div>
           <Button 
             size="icon" 
@@ -110,17 +131,36 @@ export default function CafePage() {
       {/* Main Content */}
       <div className="px-4 pt-4 space-y-4">
         {/* Cafe Images Carousel */}
-        <div className="overflow-hidden rounded-xl" ref={emblaRef} data-testid="carousel-cafe-images">
-          <div className="flex">
-            {cafeImages.map((image, index) => (
-              <div key={index} className="flex-[0_0_100%] min-w-0">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full h-48 object-cover"
-                  data-testid={`image-cafe-${index}`}
-                />
-              </div>
+        <div className="relative">
+          <div className="overflow-hidden rounded-xl" ref={emblaRef} data-testid="carousel-cafe-images">
+            <div className="flex">
+              {cafeImages.map((image, index) => (
+                <div key={index} className="flex-[0_0_100%] min-w-0">
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    className="w-full h-48 object-cover"
+                    data-testid={`image-cafe-${index}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Animated Dots Indicator */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
+            {cafeImages.map((_, index) => (
+              <button
+                key={index}
+                className={`transition-all duration-300 rounded-full ${
+                  index === selectedIndex
+                    ? 'w-8 h-2 bg-primary'
+                    : 'w-2 h-2 bg-white/50 hover:bg-white/75'
+                }`}
+                onClick={() => emblaApi?.scrollTo(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                data-testid={`carousel-dot-${index}`}
+              />
             ))}
           </div>
         </div>
