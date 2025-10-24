@@ -10,6 +10,18 @@ export class ExternalDbStorage implements IStorage {
   private staticData: Omit<Cafe, 'gamingStations'>;
   private isSecureConnection: boolean;
 
+  private isCurrentlyPeakHours(): boolean {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const hour = now.getHours();
+    
+    // Peak hours: Friday-Sunday 6:00 PM (18:00) - 11:00 PM (23:00)
+    const isPeakDay = day === 5 || day === 6 || day === 0; // Friday, Saturday, Sunday
+    const isPeakTime = hour >= 18 && hour < 23;
+    
+    return isPeakDay && isPeakTime;
+  }
+
   constructor() {
     // Use Replit's built-in database or read-only connection if available
     const dbUrl = process.env.READONLY_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL || process.env.DATABASE_URL;
@@ -73,7 +85,9 @@ export class ExternalDbStorage implements IStorage {
         { day: "Saturday", openTime: "9:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Peak Day" },
         { day: "Sunday", openTime: "9:00 AM", closeTime: "12:00 AM", isPeakHours: true, note: "Peak Day" }
       ],
-      peakHoursInfo: "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM"
+      peakHoursInfo: this.isCurrentlyPeakHours() 
+        ? "🔥 PEAK HOURS NOW - Higher demand expected (Friday-Sunday 6:00 PM - 11:00 PM)"
+        : "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM"
     };
   }
 
@@ -220,24 +234,24 @@ export class ExternalDbStorage implements IStorage {
           {
             id: "pc",
             type: "PC",
-            available: 0,
-            total: 5,
-            status: "Full",
+            available: 8,
+            total: 15,
+            status: "Available Now",
             icon: "monitor"
           },
           {
             id: "ps5",
             type: "PS5",
-            available: 0,
-            total: 4,
-            status: "Full",
+            available: 3,
+            total: 6,
+            status: "Available Now",
             icon: "gamepad"
           },
           {
             id: "vr",
             type: "VR",
             available: 2,
-            total: 3,
+            total: 4,
             status: "Available Now",
             icon: "headset"
           },
@@ -245,8 +259,8 @@ export class ExternalDbStorage implements IStorage {
             id: "racing",
             type: "Racing Sim",
             available: 1,
-            total: 2,
-            status: "Available Now",
+            total: 3,
+            status: "Limited",
             icon: "car"
           }
         ]
