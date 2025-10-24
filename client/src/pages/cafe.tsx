@@ -28,6 +28,7 @@ import pcSetupImg from "@assets/generated_images/Gaming_cafe_PC_setup_interior_7
 import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_8b8e7595.png";
 import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.png";
 import { SplashScreen } from "@/components/SplashScreen";
+import { InstagramFollowPopup } from "@/components/InstagramFollowPopup";
 
 export default function CafePage() {
   const { data: cafe, isLoading } = useQuery<Cafe>({
@@ -420,6 +421,9 @@ export default function CafePage() {
           </Button>
         </div>
       </div>
+
+      {/* Instagram Follow Popup */}
+      <InstagramFollowPopup />
     </div>
   );
 }
