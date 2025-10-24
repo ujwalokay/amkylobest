@@ -9,9 +9,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Instagram, Heart } from "lucide-react";
 
+const getProfileImageSources = (username: string, customUrl?: string) => {
+  const sources = [];
+  
+  if (customUrl) {
+    sources.push(customUrl);
+  }
+  
+  sources.push(
+    `https://unavatar.io/instagram/${username}`,
+    `https://avatars.githubusercontent.com/${username}`,
+    `https://i.pravatar.cc/150?u=${username}`,
+    `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
+  );
+  
+  return sources;
+};
+
 export function InstagramFollowPopup() {
   const [isOpen, setIsOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
+  const [imageSource1, setImageSource1] = useState(0);
+  const [imageSource2, setImageSource2] = useState(0);
   
   useEffect(() => {
     const dismissedUntil = localStorage.getItem("instagram-popup-dismissed-until");
@@ -62,8 +81,26 @@ export function InstagramFollowPopup() {
   const instagramAccount1 = extractUsername(account1Raw);
   const instagramAccount2 = extractUsername(account2Raw);
   
-  const profileImage1 = import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_1 || `https://unavatar.io/instagram/${instagramAccount1}`;
-  const profileImage2 = import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_2 || `https://unavatar.io/instagram/${instagramAccount2}`;
+  const profileImageSources1 = getProfileImageSources(
+    instagramAccount1, 
+    import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_1
+  );
+  const profileImageSources2 = getProfileImageSources(
+    instagramAccount2, 
+    import.meta.env.VITE_INSTAGRAM_PROFILE_IMAGE_2
+  );
+  
+  const handleImageError1 = () => {
+    if (imageSource1 < profileImageSources1.length - 1) {
+      setImageSource1(prev => prev + 1);
+    }
+  };
+  
+  const handleImageError2 = () => {
+    if (imageSource2 < profileImageSources2.length - 1) {
+      setImageSource2(prev => prev + 1);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -88,19 +125,12 @@ export function InstagramFollowPopup() {
               >
                 <div className="relative flex-shrink-0">
                   <img
-                    src={profileImage1}
+                    key={`profile1-${imageSource1}`}
+                    src={profileImageSources1[imageSource1]}
                     alt={instagramAccount1}
                     className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-purple-500 object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
+                    onError={handleImageError1}
                   />
-                  <div className="hidden h-12 w-12 sm:h-14 sm:w-14 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-full">
-                    <Instagram className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
-                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-foreground text-sm sm:text-base truncate">@{instagramAccount1}</div>
@@ -117,19 +147,12 @@ export function InstagramFollowPopup() {
               >
                 <div className="relative flex-shrink-0">
                   <img
-                    src={profileImage2}
+                    key={`profile2-${imageSource2}`}
+                    src={profileImageSources2[imageSource2]}
                     alt={instagramAccount2}
                     className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 border-purple-500 object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
+                    onError={handleImageError2}
                   />
-                  <div className="hidden h-12 w-12 sm:h-14 sm:w-14 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-full">
-                    <Instagram className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
-                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-foreground text-sm sm:text-base truncate">@{instagramAccount2}</div>
@@ -176,25 +199,21 @@ export function InstagramFollowPopup() {
             <div className="flex justify-center gap-3 sm:gap-4">
               <div className="text-center">
                 <img
-                  src={profileImage1}
+                  key={`thank-you-profile1-${imageSource1}`}
+                  src={profileImageSources1[imageSource1]}
                   alt={instagramAccount1}
                   className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-purple-500 shadow-lg mx-auto mb-1"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23a855f7" stroke-width="2"%3E%3Crect x="2" y="2" width="20" height="20" rx="5" ry="5"%3E%3C/rect%3E%3Cpath d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"%3E%3C/path%3E%3Cline x1="17.5" y1="6.5" x2="17.51" y2="6.5"%3E%3C/line%3E%3C/svg%3E';
-                  }}
+                  onError={handleImageError1}
                 />
                 <p className="text-xs text-muted-foreground truncate max-w-[80px]">@{instagramAccount1}</p>
               </div>
               <div className="text-center">
                 <img
-                  src={profileImage2}
+                  key={`thank-you-profile2-${imageSource2}`}
+                  src={profileImageSources2[imageSource2]}
                   alt={instagramAccount2}
                   className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-purple-500 shadow-lg mx-auto mb-1"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23a855f7" stroke-width="2"%3E%3Crect x="2" y="2" width="20" height="20" rx="5" ry="5"%3E%3C/rect%3E%3Cpath d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"%3E%3C/path%3E%3Cline x1="17.5" y1="6.5" x2="17.51" y2="6.5"%3E%3C/line%3E%3C/svg%3E';
-                  }}
+                  onError={handleImageError2}
                 />
                 <p className="text-xs text-muted-foreground truncate max-w-[80px]">@{instagramAccount2}</p>
               </div>
