@@ -14,6 +14,16 @@ The application provides users with:
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**October 25, 2025** - Vercel Deployment Configuration
+- Added serverless function support for Vercel deployment
+- Created `/api/index.ts` as the Vercel serverless entry point
+- Configured `vercel.json` with proper routing for API, static assets, and SPA fallback
+- Added `vercel-build` script to package.json
+- Created comprehensive deployment guide in `VERCEL_DEPLOYMENT.md`
+- Application is now ready for deployment to Vercel with zero-config setup
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -110,3 +120,21 @@ Preferred communication style: Simple, everyday language.
   - Disabled refetch on window focus
   - Infinite stale time for static data
   - Custom fetch function with credential support
+
+### Deployment Options
+
+**Vercel (Configured)**
+- Serverless function deployment via `/api/index.ts`
+- Automatic routing configured in `vercel.json`:
+  - `/api/*` routes to Express serverless function
+  - Static assets served directly from build output
+  - SPA fallback for client-side routing
+- Build command: `npm run vercel-build`
+- Output directory: `dist/public`
+- Compatible with Neon PostgreSQL serverless driver
+- See `VERCEL_DEPLOYMENT.md` for detailed deployment instructions
+
+**Replit (Current Environment)**
+- Development server runs via `npm run dev`
+- Configured workflow serves on port 5000
+- Hot module replacement enabled for rapid development
