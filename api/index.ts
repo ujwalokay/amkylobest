@@ -16,21 +16,29 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  // Parse the URL to get the path
+  // On Vercel, the path will be /cafe (without /api prefix since that's already handled by routing)
+  // Also handle the full path for compatibility
   const url = new URL(req.url || '', `http://${req.headers.host}`);
   const path = url.pathname;
 
   try {
-    // Handle /api/cafe endpoint
-    if (path === '/api/cafe' && req.method === 'GET') {
+    // Handle cafe endpoint - check for both /cafe and /api/cafe
+    if ((path === '/cafe' || path === '/api/cafe') && req.method === 'GET') {
+      const cafe = await storage.getCafe();
+      return res.status(200).json(cafe);
+    }
+
+    // Default response for root /api path
+    if (path === '/' || path === '/api' || path === '/api/') {
       const cafe = await storage.getCafe();
       return res.status(200).json(cafe);
     }
 
     // 404 for unknown endpoints
-    return res.status(404).json({ error: 'Not found' });
+    console.log('Unknown path:', path);
+    return res.status(404).json({ error: 'Not found', path });
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({ error: 'Failed to fetch cafe data' });
+    return res.status(500).json({ error: 'Failed to fetch cafe data', message: error instanceof Error ? error.message : 'Unknown error' });
   }
 }
