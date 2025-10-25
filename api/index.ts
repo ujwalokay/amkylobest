@@ -53,16 +53,28 @@ async function getCafeData(): Promise<Cafe> {
   // Try to use database storage if available
   if (process.env.DATABASE_URL || process.env.READONLY_DATABASE_URL) {
     try {
+      console.log('Attempting to connect to database...');
+      console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
+      console.log('READONLY_DATABASE_URL:', process.env.READONLY_DATABASE_URL ? 'Set' : 'Not set');
+      
       const { storage } = await import("../server/storage");
-      return await storage.getCafe();
+      const cafe = await storage.getCafe();
+      
+      console.log('Successfully fetched cafe data from database');
+      console.log('Gaming stations:', cafe.gamingStations.map(s => `${s.type}: ${s.available}/${s.total}`).join(', '));
+      
+      return cafe;
     } catch (error) {
-      console.error('Database error, using fallback data:', error);
+      console.error('DATABASE ERROR - Using fallback data instead:');
+      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       return fallbackCafeData;
     }
   }
   
   // Use fallback data if no database configured
-  console.log('No database configured, using fallback data');
+  console.log('No database environment variables found, using fallback data');
   return fallbackCafeData;
 }
 
