@@ -20,7 +20,7 @@ interface ShareDialogProps {
 export function ShareDialog({ isOpen, onClose, cafeName, url }: ShareDialogProps) {
   const [copied, setCopied] = useState(false);
 
-  const shareMessage = `🎮 ${cafeName} - Check Live Availability Now!\n\nClick to see real-time gaming station availability! PS5, PC, VR & Racing Simulators available. Book your gaming session now!\n\n${url}`;
+  const shareMessage = `🎮 ${cafeName} - Check Live Availability Now!\n\nClick to see real-time gaming station availability! PS5, PC, VR & Racing Simulators available. Book your gaming session now!\n\n${url}\n\nPowered by Airavoto Gaming`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareMessage).then(() => {
@@ -97,6 +97,9 @@ export function ShareDialog({ isOpen, onClose, cafeName, url }: ShareDialogProps
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Click to see real-time gaming station availability! PS5, PC, VR & Racing Simulators available. Book your gaming session now!
+          </p>
+          <p className="text-xs text-purple-400 mt-3 font-medium">
+            Powered by Airavoto Gaming
           </p>
         </div>
 
