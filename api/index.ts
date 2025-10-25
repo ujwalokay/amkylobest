@@ -1,4 +1,70 @@
-import { storage } from "../server/storage";
+import type { Cafe } from "../shared/schema";
+
+// Fallback cafe data for when database is not available
+const fallbackCafeData: Cafe = {
+  id: "1",
+  name: "GameZone Arena",
+  rating: 4.5,
+  location: "Dombivli West",
+  distance: "0.5 km",
+  about: "Premium gaming cafe with high-end PCs, latest consoles, VR headsets, and racing simulators. Perfect for competitive gaming.",
+  phoneNumber: "+919876543210",
+  whatsappNumber: "919876543210",
+  mapUrl: "https://maps.google.com",
+  games: [
+    { id: "gta5", name: "GTA V", platform: "PC" },
+    { id: "valorant", name: "Valorant", platform: "PC" },
+    { id: "csgo", name: "CS:GO", platform: "PC" },
+    { id: "fortnite", name: "Fortnite", platform: "PC" },
+    { id: "pubg", name: "PUBG", platform: "PC" },
+    { id: "minecraft", name: "Minecraft", platform: "PC" },
+    { id: "fifa23", name: "FIFA 23", platform: "PS5" },
+    { id: "spiderman2", name: "Spider-Man 2", platform: "PS5" },
+    { id: "godofwar", name: "God of War", platform: "PS5" },
+    { id: "granturismo7", name: "Gran Turismo 7", platform: "PS5" }
+  ],
+  amenities: [
+    { id: "wifi", name: "High-speed WiFi", icon: "wifi" },
+    { id: "ac", name: "Air Conditioned", icon: "wind" },
+    { id: "snacks", name: "Snacks & Drinks", icon: "coffee" },
+    { id: "headsets", name: "Premium Headsets", icon: "headset" },
+    { id: "vr-gaming", name: "VR Gaming", icon: "headset" },
+    { id: "racing-sim", name: "Racing Simulators", icon: "car" }
+  ],
+  schedule: [
+    { day: "Monday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+    { day: "Tuesday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+    { day: "Wednesday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+    { day: "Thursday", openTime: "10:00 AM", closeTime: "11:00 PM", isPeakHours: false },
+    { day: "Friday", openTime: "10:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Extended Hours" },
+    { day: "Saturday", openTime: "9:00 AM", closeTime: "1:00 AM", isPeakHours: true, note: "Peak Day" },
+    { day: "Sunday", openTime: "9:00 AM", closeTime: "12:00 AM", isPeakHours: true, note: "Peak Day" }
+  ],
+  peakHoursInfo: "Peak hours: Friday-Sunday 6:00 PM - 11:00 PM",
+  gamingStations: [
+    { id: "pc", type: "PC", available: 8, total: 15, status: "Available Now", icon: "monitor" },
+    { id: "ps5", type: "PS5", available: 3, total: 6, status: "Available Now", icon: "gamepad" },
+    { id: "vr", type: "VR", available: 2, total: 4, status: "Available Now", icon: "headset" },
+    { id: "racing", type: "Racing Sim", available: 1, total: 3, status: "Limited", icon: "car" }
+  ]
+};
+
+async function getCafeData(): Promise<Cafe> {
+  // Try to use database storage if available
+  if (process.env.DATABASE_URL || process.env.READONLY_DATABASE_URL) {
+    try {
+      const { storage } = await import("../server/storage");
+      return await storage.getCafe();
+    } catch (error) {
+      console.error('Database error, using fallback data:', error);
+      return fallbackCafeData;
+    }
+  }
+  
+  // Use fallback data if no database configured
+  console.log('No database configured, using fallback data');
+  return fallbackCafeData;
+}
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers
@@ -24,13 +90,13 @@ export default async function handler(req: any, res: any) {
   try {
     // Handle cafe endpoint - check for both /cafe and /api/cafe
     if ((path === '/cafe' || path === '/api/cafe') && req.method === 'GET') {
-      const cafe = await storage.getCafe();
+      const cafe = await getCafeData();
       return res.status(200).json(cafe);
     }
 
     // Default response for root /api path
     if (path === '/' || path === '/api' || path === '/api/') {
-      const cafe = await storage.getCafe();
+      const cafe = await getCafeData();
       return res.status(200).json(cafe);
     }
 
