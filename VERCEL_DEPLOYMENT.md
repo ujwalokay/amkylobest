@@ -2,11 +2,20 @@
 
 This guide will help you deploy your GameZone Arena application to Vercel.
 
+## Quick Start
+
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) → Import your repository
+3. Add `DATABASE_URL` environment variable (if using external database)
+4. Deploy!
+
+Your app will be live at `https://your-app.vercel.app`
+
 ## Prerequisites
 
 1. A [Vercel account](https://vercel.com/signup) (free)
 2. Your code pushed to GitHub, GitLab, or Bitbucket
-3. Environment variables (if using external database)
+3. Database connection string (if using external database)
 
 ## Deployment Steps
 
@@ -65,11 +74,11 @@ This guide will help you deploy your GameZone Arena application to Vercel.
 
 ## How It Works
 
-- **Backend**: The Express API runs as serverless functions in the `/api` folder
-- **Frontend**: Vite builds your React app to static files served from `/dist/public`
+- **Backend**: A lightweight serverless function in `/api/index.ts` handles API requests
+- **Frontend**: Vite builds your React app to static files in `/dist/public`
 - **Routing**: 
-  - All `/api/*` requests → Express serverless function
-  - All other requests → React frontend (SPA)
+  - `/api/*` requests → Serverless function
+  - All other requests → React frontend (static files + SPA routing)
 
 ## Important Notes
 

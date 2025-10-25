@@ -1,61 +1,36 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "../server/routes";
-import { serveStatic, log } from "../server/vite";
+import { storage } from "../server/storage";
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+export default async function handler(req: any, res: any) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
-
-let serverInitialized = false;
-
-async function initializeServer() {
-  if (!serverInitialized) {
-    await registerRoutes(app);
-    
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-      console.error(err);
-    });
-
-    serveStatic(app);
-    serverInitialized = true;
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
   }
-  return app;
-}
 
-export default async function handler(req: Request, res: Response) {
-  const app = await initializeServer();
-  return app(req, res);
+  // Parse the URL to get the path
+  const url = new URL(req.url || '', `http://${req.headers.host}`);
+  const path = url.pathname;
+
+  try {
+    // Handle /api/cafe endpoint
+    if (path === '/api/cafe' && req.method === 'GET') {
+      const cafe = await storage.getCafe();
+      return res.status(200).json(cafe);
+    }
+
+    // 404 for unknown endpoints
+    return res.status(404).json({ error: 'Not found' });
+  } catch (error) {
+    console.error('API Error:', error);
+    return res.status(500).json({ error: 'Failed to fetch cafe data' });
+  }
 }
