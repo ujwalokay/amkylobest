@@ -417,15 +417,22 @@ export default function CafePage() {
       {/* Fixed Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border">
         <div className="grid grid-cols-3 gap-2 p-3">
-          <Button
-            variant="outline"
-            className="flex flex-col items-center gap-1.5 h-auto py-3 bg-chart-2/10 border-chart-2/30"
-            data-testid="button-call"
-            onClick={() => cafe.phoneNumber && window.open(`tel:${cafe.phoneNumber}`)}
-          >
-            <Phone className="h-5 w-5 text-chart-2" />
-            <span className="text-xs text-chart-2 font-medium">Call</span>
-          </Button>
+          <div className="relative">
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full mb-1">
+              <Badge className="bg-chart-2 text-white text-[10px] px-2 py-0.5 whitespace-nowrap animate-pulse" data-testid="badge-booking-label">
+                For Booking 📞
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              className="flex flex-col items-center gap-1.5 h-auto py-3 bg-chart-2/10 border-chart-2/30 w-full"
+              data-testid="button-call"
+              onClick={() => cafe.phoneNumber && window.open(`tel:${cafe.phoneNumber}`)}
+            >
+              <Phone className="h-5 w-5 text-chart-2" />
+              <span className="text-xs text-chart-2 font-medium">Call</span>
+            </Button>
+          </div>
           
           <Button
             variant="outline"
