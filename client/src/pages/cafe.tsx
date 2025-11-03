@@ -18,7 +18,8 @@ import {
   Dribbble,
   Clock,
   Calendar,
-  Share2
+  Share2,
+  ArrowDown
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import useEmblaCarousel from "embla-carousel-react";
@@ -418,14 +419,28 @@ export default function CafePage() {
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border">
         <div className="grid grid-cols-3 gap-2 p-3">
           <div className="relative">
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full mb-1">
-              <Badge className="bg-chart-2 text-white text-[10px] px-2 py-0.5 whitespace-nowrap animate-pulse" data-testid="badge-booking-label">
-                For Booking 📞
-              </Badge>
+            {/* Attractive Booking Sticker with Arrow */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full z-10">
+              <div className="relative">
+                {/* Main Sticker Badge */}
+                <div className="relative bg-gradient-to-r from-chart-2 via-chart-2 to-chart-1 text-white px-4 py-1.5 rounded-full shadow-lg animate-bounce" data-testid="badge-booking-label">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-3.5 w-3.5 animate-pulse" />
+                    <span className="text-xs font-bold tracking-wide">TAP TO BOOK NOW!</span>
+                    <span className="text-sm">📞</span>
+                  </div>
+                  {/* Glowing effect */}
+                  <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-75"></div>
+                </div>
+                {/* Arrow pointing down */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                  <ArrowDown className="h-4 w-4 text-chart-2 animate-bounce drop-shadow-md" strokeWidth={3} />
+                </div>
+              </div>
             </div>
             <Button
               variant="outline"
-              className="flex flex-col items-center gap-1.5 h-auto py-3 bg-chart-2/10 border-chart-2/30 w-full"
+              className="flex flex-col items-center gap-1.5 h-auto py-3 bg-chart-2/10 border-chart-2/30 w-full hover:bg-chart-2/20 hover:border-chart-2/50 transition-all duration-300 hover:scale-105 hover:shadow-lg"
               data-testid="button-call"
               onClick={() => cafe.phoneNumber && window.open(`tel:${cafe.phoneNumber}`)}
             >
