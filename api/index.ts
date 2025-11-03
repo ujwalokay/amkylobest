@@ -202,6 +202,153 @@ async function getCafeData(): Promise<Cafe> {
   }
 }
 
+async function getSeatsByCategory(category: string) {
+  const dbUrl = process.env.READONLY_DATABASE_URL || process.env.DATABASE_URL;
+  
+  // Fallback data configuration
+  const fallbackData: Record<string, { total: number; occupied: number[] }> = {
+    "PC": { total: 15, occupied: [1, 2, 3, 4, 5, 6, 7] },
+    "PS5": { total: 6, occupied: [1, 2, 3] },
+    "VR": { total: 4, occupied: [1, 2] },
+    "Racing Sim": { total: 3, occupied: [1, 2] },
+    "Racing": { total: 3, occupied: [1, 2] },
+  };
+  
+  if (!dbUrl) {
+    console.log('No database configured, using fallback seat data');
+    const config = fallbackData[category];
+    if (!config) {
+      throw new Error(`Category ${category} not found`);
+    }
+    
+    const seats: any[] = [];
+    const now = new Date();
+    const endTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    
+    for (let i = 1; i <= config.total; i++) {
+      const seatName = `${category}-${i}`;
+      const isOccupied = config.occupied.includes(i);
+      
+      if (isOccupied) {
+        seats.push({
+          seatName,
+          status: "occupied",
+          startTime: now.toISOString(),
+          endTime: endTime.toISOString(),
+        });
+      } else {
+        seats.push({
+          seatName,
+          status: "available",
+        });
+      }
+    }
+    
+    return {
+      category,
+      totalSeats: config.total,
+      availableCount: seats.filter((s: any) => s.status === "available").length,
+      seats,
+    };
+  }
+  
+  try {
+    console.log('Fetching seats from database for category:', category);
+    const sql = neon(dbUrl);
+    
+    const deviceConfig = await sql`
+      SELECT id, category, count 
+      FROM device_configs
+      WHERE category = ${category}
+      LIMIT 1
+    `;
+
+    if (deviceConfig.length === 0) {
+      throw new Error(`Category ${category} not found`);
+    }
+
+    const totalSeats = deviceConfig[0].count;
+
+    const bookings = await sql`
+      SELECT seat_name, status, start_time, end_time
+      FROM bookings
+      WHERE category = ${category} AND status = 'running'
+    `;
+
+    const occupiedSeats = new Map();
+    bookings.forEach((booking: any) => {
+      occupiedSeats.set(booking.seat_name, {
+        startTime: booking.start_time,
+        endTime: booking.end_time,
+      });
+    });
+
+    const seats: any[] = [];
+    for (let i = 1; i <= totalSeats; i++) {
+      const seatName = `${category}-${i}`;
+      const booking = occupiedSeats.get(seatName);
+      
+      if (booking) {
+        seats.push({
+          seatName,
+          status: "occupied",
+          startTime: booking.startTime ? new Date(booking.startTime).toISOString() : undefined,
+          endTime: booking.endTime ? new Date(booking.endTime).toISOString() : undefined,
+        });
+      } else {
+        seats.push({
+          seatName,
+          status: "available",
+        });
+      }
+    }
+
+    return {
+      category,
+      totalSeats,
+      availableCount: seats.filter((s: any) => s.status === "available").length,
+      seats,
+    };
+  } catch (error) {
+    console.error(`Database error for category ${category}, using fallback:`, error);
+    
+    const config = fallbackData[category];
+    if (!config) {
+      throw new Error(`Category ${category} not found`);
+    }
+    
+    const seats: any[] = [];
+    const now = new Date();
+    const endTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    
+    for (let i = 1; i <= config.total; i++) {
+      const seatName = `${category}-${i}`;
+      const isOccupied = config.occupied.includes(i);
+      
+      if (isOccupied) {
+        seats.push({
+          seatName,
+          status: "occupied",
+          startTime: now.toISOString(),
+          endTime: endTime.toISOString(),
+        });
+      } else {
+        seats.push({
+          seatName,
+          status: "available",
+        });
+      }
+    }
+    
+    return {
+      category,
+      totalSeats: config.total,
+      availableCount: seats.filter((s: any) => s.status === "available").length,
+      seats,
+    };
+  }
+}
+
 export default async function handler(req: any, res: any) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -230,6 +377,15 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(cafe);
     }
 
+    // Handle seats endpoint - /seats/:category or /api/seats/:category
+    const seatsMatch = path.match(/^\/(?:api\/)?seats\/(.+)$/);
+    if (seatsMatch && req.method === 'GET') {
+      const category = decodeURIComponent(seatsMatch[1]);
+      console.log('Fetching seats for category:', category);
+      const seats = await getSeatsByCategory(category);
+      return res.status(200).json(seats);
+    }
+
     // Default response for root /api path
     if (path === '/' || path === '/api' || path === '/api/') {
       const cafe = await getCafeData();
@@ -241,6 +397,6 @@ export default async function handler(req: any, res: any) {
     return res.status(404).json({ error: 'Not found', path });
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({ error: 'Failed to fetch cafe data', message: error instanceof Error ? error.message : 'Unknown error' });
+    return res.status(500).json({ error: 'Failed to fetch data', message: error instanceof Error ? error.message : 'Unknown error' });
   }
 }
