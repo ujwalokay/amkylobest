@@ -416,28 +416,33 @@ export default function CafePage() {
       </div>
 
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border shadow-lg">
         <div className="grid grid-cols-3 gap-2 p-3">
           <Button
             variant="outline"
-            className="relative flex flex-col items-center gap-1 h-auto py-3 w-full overflow-hidden border-chart-2/50 bg-gradient-to-r from-chart-2 via-purple-500 to-chart-1 animate-gradient-x"
+            className="relative flex flex-col items-center gap-1 h-auto py-3 w-full overflow-hidden border-0 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             data-testid="button-call"
             onClick={() => cafe.phoneNumber && window.open(`tel:${cafe.phoneNumber}`)}
           >
+            {/* Animated shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine" />
+            
             {/* Marquee Message */}
-            <div className="w-full overflow-hidden mb-1">
-              <div className="animate-marquee whitespace-nowrap">
-                <span className="text-[10px] font-semibold text-white tracking-wide">
-                  📞 Call us to book the seat 📞 Call us to book the seat 📞
+            <div className="w-full overflow-hidden mb-0.5 relative z-10">
+              <div className="animate-marquee-continuous whitespace-nowrap inline-block">
+                <span className="text-[11px] font-bold text-white tracking-wider drop-shadow-md">
+                  📞 Call us to book the seat • 📞 Call us to book the seat • 📞 Call us to book the seat • 📞 Call us to book the seat • 
                 </span>
               </div>
             </div>
             
-            {/* Phone Icon */}
-            <Phone className="h-5 w-5 text-white" />
+            {/* Phone Icon with pulse */}
+            <div className="relative z-10">
+              <Phone className="h-6 w-6 text-white drop-shadow-lg animate-pulse-subtle" />
+            </div>
             
             {/* Label */}
-            <span className="text-xs text-white font-medium">Call</span>
+            <span className="text-sm text-white font-bold tracking-wide drop-shadow-md relative z-10">Call Now</span>
           </Button>
           
           <Button

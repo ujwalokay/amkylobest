@@ -411,6 +411,35 @@
   }
 }
 
+@keyframes marquee-continuous {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
 .scroll-bg {
   animation: scrollBackground 20s linear infinite;
 }
@@ -423,6 +452,19 @@
 .animate-marquee {
   display: inline-block;
   animation: marquee 8s linear infinite;
+}
+
+.animate-marquee-continuous {
+  display: inline-block;
+  animation: marquee-continuous 15s linear infinite;
+}
+
+.animate-shine {
+  animation: shine 3s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
 
 .fade-in-scale {
