@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CircleCheckBig, CircleX } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Clock, CircleCheckBig, CircleX, Search, Filter } from "lucide-react";
 import type { CategorySeats } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
@@ -18,12 +21,17 @@ interface SeatDetailsDialogProps {
   stationType: string;
 }
 
+type FilterStatus = "all" | "available" | "occupied";
+
 export function SeatDetailsDialog({
   open,
   onOpenChange,
   category,
   stationType,
 }: SeatDetailsDialogProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
+
   const { data: seatData, isLoading, error } = useQuery<CategorySeats>({
     queryKey: ["/api/seats", category],
     enabled: open,
@@ -46,6 +54,27 @@ export function SeatDetailsDialog({
     }
   };
 
+  const filteredSeats = useMemo(() => {
+    if (!seatData?.seats) return [];
+
+    return seatData.seats.filter((seat) => {
+      const matchesSearch = seat.seatName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      const matchesFilter =
+        filterStatus === "all" ||
+        seat.status === filterStatus;
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [seatData?.seats, searchQuery, filterStatus]);
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setFilterStatus("all");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto" data-testid="dialog-seat-details">
@@ -61,6 +90,83 @@ export function SeatDetailsDialog({
             )}
           </DialogDescription>
         </DialogHeader>
+
+        {/* Search and Filter Controls */}
+        {!isLoading && !error && seatData && (
+          <div className="space-y-3">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by seat name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search-seats"
+              />
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" data-testid="icon-filter" />
+              <div className="flex gap-2 flex-1">
+                <Button
+                  size="sm"
+                  variant={filterStatus === "all" ? "default" : "outline"}
+                  onClick={() => setFilterStatus("all")}
+                  className="flex-1"
+                  data-testid="button-filter-all"
+                >
+                  All
+                </Button>
+                <Button
+                  size="sm"
+                  variant={filterStatus === "available" ? "default" : "outline"}
+                  onClick={() => setFilterStatus("available")}
+                  className={`flex-1 ${
+                    filterStatus === "available" 
+                      ? "bg-success hover:bg-success/90" 
+                      : ""
+                  }`}
+                  data-testid="button-filter-available"
+                >
+                  Available
+                </Button>
+                <Button
+                  size="sm"
+                  variant={filterStatus === "occupied" ? "default" : "outline"}
+                  onClick={() => setFilterStatus("occupied")}
+                  className={`flex-1 ${
+                    filterStatus === "occupied" 
+                      ? "bg-destructive hover:bg-destructive/90" 
+                      : ""
+                  }`}
+                  data-testid="button-filter-occupied"
+                >
+                  Occupied
+                </Button>
+              </div>
+            </div>
+
+            {/* Results Count & Reset */}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground" data-testid="text-results-count">
+                Showing {filteredSeats.length} of {seatData.seats.length} seats
+              </span>
+              {(searchQuery || filterStatus !== "all") && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleReset}
+                  data-testid="button-reset-filters"
+                  className="h-auto py-1 px-2 text-xs"
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-3 mt-4">
           {isLoading && (
@@ -78,7 +184,17 @@ export function SeatDetailsDialog({
             </div>
           )}
 
-          {!isLoading && !error && seatData && seatData.seats.map((seat) => (
+          {/* No Results Message */}
+          {!isLoading && !error && seatData && filteredSeats.length === 0 && (
+            <div className="text-center py-8" data-testid="text-no-results">
+              <p className="text-muted-foreground mb-2">No seats found</p>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your search or filter
+              </p>
+            </div>
+          )}
+
+          {!isLoading && !error && seatData && filteredSeats.map((seat) => (
             <div
               key={seat.seatName}
               className={`p-4 rounded-lg border transition-colors ${
