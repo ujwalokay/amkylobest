@@ -1,8 +1,9 @@
-import { type Cafe, type GamingStation } from "@shared/schema";
+import { type Cafe, type GamingStation, type CategorySeats, type SeatDetail } from "@shared/schema";
 import { neon } from "@neondatabase/serverless";
 
 export interface IStorage {
   getCafe(): Promise<Cafe>;
+  getSeatsByCategory(category: string): Promise<CategorySeats>;
 }
 
 export class ExternalDbStorage implements IStorage {
@@ -268,6 +269,75 @@ export class ExternalDbStorage implements IStorage {
           }
         ]
       };
+    }
+  }
+
+  async getSeatsByCategory(category: string): Promise<CategorySeats> {
+    try {
+      // Get the device config for this category
+      const deviceConfig = await this.sql`
+        SELECT id, category, count 
+        FROM device_configs
+        WHERE category = ${category}
+        LIMIT 1
+      `;
+
+      if (deviceConfig.length === 0) {
+        const error: any = new Error(`Category ${category} not found`);
+        error.statusCode = 404;
+        throw error;
+      }
+
+      const totalSeats = deviceConfig[0].count;
+
+      // Get all active bookings for this category
+      const bookings = await this.sql`
+        SELECT seat_name, status, start_time, end_time
+        FROM bookings
+        WHERE category = ${category} AND status = 'running'
+      `;
+
+      // Create a map of occupied seats
+      const occupiedSeats = new Map();
+      bookings.forEach((booking: any) => {
+        occupiedSeats.set(booking.seat_name, {
+          startTime: booking.start_time,
+          endTime: booking.end_time,
+        });
+      });
+
+      // Generate seat list
+      const seats: SeatDetail[] = [];
+      for (let i = 1; i <= totalSeats; i++) {
+        const seatName = `${category}-${i}`;
+        const booking = occupiedSeats.get(seatName);
+        
+        if (booking) {
+          seats.push({
+            seatName,
+            status: "occupied",
+            startTime: booking.startTime ? new Date(booking.startTime).toISOString() : undefined,
+            endTime: booking.endTime ? new Date(booking.endTime).toISOString() : undefined,
+          });
+        } else {
+          seats.push({
+            seatName,
+            status: "available",
+          });
+        }
+      }
+
+      const availableCount = seats.filter(s => s.status === "available").length;
+
+      return {
+        category,
+        totalSeats,
+        availableCount,
+        seats,
+      };
+    } catch (error) {
+      console.error(`Error fetching seats for category ${category}:`, error);
+      throw error;
     }
   }
 }

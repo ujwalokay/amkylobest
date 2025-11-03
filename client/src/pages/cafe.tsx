@@ -31,6 +31,7 @@ import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.pn
 import { SplashScreen } from "@/components/SplashScreen";
 import { InstagramFollowPopup } from "@/components/InstagramFollowPopup";
 import { ShareDialog } from "@/components/ShareDialog";
+import { SeatDetailsDialog } from "@/components/SeatDetailsDialog";
 
 export default function CafePage() {
   const { data: cafe, isLoading } = useQuery<Cafe>({
@@ -40,6 +41,8 @@ export default function CafePage() {
   const [showSplash, setShowSplash] = useState(true);
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showSeatDetails, setShowSeatDetails] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<{ category: string; type: string } | null>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
@@ -127,6 +130,11 @@ export default function CafePage() {
 
   const handleShare = () => {
     setShowShareDialog(true);
+  };
+
+  const handleStationClick = (category: string, type: string) => {
+    setSelectedCategory({ category, type });
+    setShowSeatDetails(true);
   };
 
   return (
@@ -224,8 +232,9 @@ export default function CafePage() {
             return (
               <Card 
                 key={station.id} 
-                className="p-4 border-card-border hover-elevate transition-transform duration-200"
+                className="p-4 border-card-border hover-elevate transition-transform duration-200 cursor-pointer active:scale-95"
                 data-testid={`card-station-${station.type.toLowerCase().replace(" ", "-")}`}
+                onClick={() => handleStationClick(station.type, station.type)}
               >
                 <div className="flex items-center gap-2 mb-3">
                   <div className="p-2 bg-primary/10 rounded-md">
@@ -450,6 +459,16 @@ export default function CafePage() {
         cafeName={cafe.name}
         url={window.location.href}
       />
+
+      {/* Seat Details Dialog */}
+      {selectedCategory && (
+        <SeatDetailsDialog
+          open={showSeatDetails}
+          onOpenChange={setShowSeatDetails}
+          category={selectedCategory.category}
+          stationType={selectedCategory.type}
+        />
+      )}
     </div>
   );
 }

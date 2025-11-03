@@ -60,3 +60,23 @@ export const cafeSchema = z.object({
 });
 
 export type Cafe = z.infer<typeof cafeSchema>;
+
+// Seat Detail Schema
+export const seatDetailSchema = z.object({
+  seatName: z.string(),
+  status: z.enum(["available", "occupied"]),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+});
+
+export type SeatDetail = z.infer<typeof seatDetailSchema>;
+
+// Category Seats Schema
+export const categorySeatsSchema = z.object({
+  category: z.string(),
+  totalSeats: z.number(),
+  availableCount: z.number(),
+  seats: z.array(seatDetailSchema),
+});
+
+export type CategorySeats = z.infer<typeof categorySeatsSchema>;
