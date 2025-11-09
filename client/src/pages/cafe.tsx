@@ -470,7 +470,10 @@ export default function CafePage() {
       </div>
 
       {/* Instagram Follow Popup */}
-      <InstagramFollowPopup onClose={() => setShowRefreshPopup(true)} />
+      <InstagramFollowPopup onClose={() => {
+        console.log("[CafePage] Instagram onClose called, showing refresh popup");
+        setShowRefreshPopup(true);
+      }} />
 
       {/* Refresh Reminder Popup */}
       <RefreshReminderPopup 

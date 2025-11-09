@@ -70,12 +70,14 @@ export function InstagramFollowPopup({ onClose }: InstagramFollowPopupProps = {}
   };
 
   const handleContinue = () => {
+    console.log("[InstagramFollowPopup] Continue button clicked");
     setShowThankYou(true);
     setTimeout(() => {
       setIsOpen(false);
       setShowThankYou(false);
       // Trigger the onClose callback to show refresh popup
       if (onClose) {
+        console.log("[InstagramFollowPopup] Calling onClose callback");
         setTimeout(() => {
           onClose();
         }, 300); // Small delay for smooth transition

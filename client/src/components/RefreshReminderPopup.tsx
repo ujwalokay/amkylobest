@@ -18,6 +18,7 @@ export function RefreshReminderPopup({ isOpen, onClose }: RefreshReminderPopupPr
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    console.log("[RefreshReminderPopup] isOpen changed:", isOpen);
     if (!isOpen) {
       setCountdown(5);
       return;
@@ -40,8 +41,9 @@ export function RefreshReminderPopup({ isOpen, onClose }: RefreshReminderPopupPr
     window.location.reload();
   };
 
-  const handleClose = () => {
-    if (countdown === 0) {
+  const handleClose = (open: boolean) => {
+    // Only allow closing if countdown is 0 and user is trying to close
+    if (!open && countdown === 0) {
       onClose();
     }
   };
