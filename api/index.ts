@@ -269,36 +269,64 @@ async function getSeatsByCategory(category: string) {
 
     const totalSeats = deviceConfig[0].count;
 
-    const bookings = await sql`
+    // Get all bookings for today (running + booked/upcoming)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const allBookings = await sql`
       SELECT seat_name, status, start_time, end_time
       FROM bookings
-      WHERE category = ${category} AND status = 'running'
+      WHERE category = ${category} 
+      AND (
+        status = 'running' 
+        OR (status IN ('booked', 'upcoming') AND start_time >= ${today.toISOString()} AND start_time < ${tomorrow.toISOString()})
+      )
+      ORDER BY seat_name, start_time
     `;
 
-    const occupiedSeats = new Map();
-    bookings.forEach((booking: any) => {
-      occupiedSeats.set(booking.seat_name, {
-        startTime: booking.start_time,
-        endTime: booking.end_time,
-      });
+    console.log(`Found ${allBookings.length} bookings for ${category}`);
+
+    // Group bookings by seat name
+    const seatBookingsMap = new Map();
+    allBookings.forEach((booking: any) => {
+      if (!seatBookingsMap.has(booking.seat_name)) {
+        seatBookingsMap.set(booking.seat_name, []);
+      }
+      seatBookingsMap.get(booking.seat_name).push(booking);
     });
 
     const seats: any[] = [];
     for (let i = 1; i <= totalSeats; i++) {
       const seatName = `${category}-${i}`;
-      const booking = occupiedSeats.get(seatName);
+      const bookings = seatBookingsMap.get(seatName) || [];
       
-      if (booking) {
+      // Check if currently occupied (has a running booking)
+      const runningBooking = bookings.find((b: any) => b.status === 'running');
+      
+      // Map all bookings to proper format
+      const mappedBookings = bookings.map((b: any) => ({
+        startTime: new Date(b.start_time).toISOString(),
+        endTime: b.end_time ? new Date(b.end_time).toISOString() : new Date(new Date(b.start_time).getTime() + 3600000).toISOString(),
+        status: (b.status === 'running' ? 'running' : 'upcoming')
+      }));
+      
+      if (runningBooking) {
+        // Seat is currently occupied
         seats.push({
           seatName,
           status: "occupied",
-          startTime: booking.startTime ? new Date(booking.startTime).toISOString() : undefined,
-          endTime: booking.endTime ? new Date(booking.endTime).toISOString() : undefined,
+          startTime: runningBooking.start_time ? new Date(runningBooking.start_time).toISOString() : undefined,
+          endTime: runningBooking.end_time ? new Date(runningBooking.end_time).toISOString() : undefined,
+          bookings: mappedBookings
         });
       } else {
+        // Seat is currently available (but may have future bookings)
         seats.push({
           seatName,
           status: "available",
+          bookings: mappedBookings
         });
       }
     }
