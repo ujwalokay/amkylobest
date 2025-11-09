@@ -290,34 +290,71 @@ export class ExternalDbStorage implements IStorage {
 
       const totalSeats = deviceConfig[0].count;
 
-      // Get all active bookings for this category
-      const bookings = await this.sql`
+      // Get all running bookings for this category
+      const runningBookings = await this.sql`
         SELECT seat_name, status, start_time, end_time
         FROM bookings
         WHERE category = ${category} AND status = 'running'
       `;
 
-      // Create a map of occupied seats
+      // Get future bookings for today (booked but not yet running)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const futureBookings = await this.sql`
+        SELECT seat_name, status, start_time, end_time
+        FROM bookings
+        WHERE category = ${category} 
+        AND status = 'booked'
+        AND start_time >= ${today.toISOString()}
+        AND start_time < ${tomorrow.toISOString()}
+      `;
+
+      // Create a map of occupied seats (currently running)
       const occupiedSeats = new Map();
-      bookings.forEach((booking: any) => {
+      runningBookings.forEach((booking: any) => {
         occupiedSeats.set(booking.seat_name, {
+          status: 'occupied',
           startTime: booking.start_time,
           endTime: booking.end_time,
         });
+      });
+
+      // Create a map of booked seats (future bookings for today)
+      const bookedSeats = new Map();
+      futureBookings.forEach((booking: any) => {
+        // Only add if not already occupied
+        if (!occupiedSeats.has(booking.seat_name)) {
+          bookedSeats.set(booking.seat_name, {
+            status: 'booked',
+            startTime: booking.start_time,
+            endTime: booking.end_time,
+          });
+        }
       });
 
       // Generate seat list
       const seats: SeatDetail[] = [];
       for (let i = 1; i <= totalSeats; i++) {
         const seatName = `${category}-${i}`;
-        const booking = occupiedSeats.get(seatName);
+        const occupiedBooking = occupiedSeats.get(seatName);
+        const bookedBooking = bookedSeats.get(seatName);
         
-        if (booking) {
+        if (occupiedBooking) {
           seats.push({
             seatName,
             status: "occupied",
-            startTime: booking.startTime ? new Date(booking.startTime).toISOString() : undefined,
-            endTime: booking.endTime ? new Date(booking.endTime).toISOString() : undefined,
+            startTime: occupiedBooking.startTime ? new Date(occupiedBooking.startTime).toISOString() : undefined,
+            endTime: occupiedBooking.endTime ? new Date(occupiedBooking.endTime).toISOString() : undefined,
+          });
+        } else if (bookedBooking) {
+          seats.push({
+            seatName,
+            status: "booked",
+            startTime: bookedBooking.startTime ? new Date(bookedBooking.startTime).toISOString() : undefined,
+            endTime: bookedBooking.endTime ? new Date(bookedBooking.endTime).toISOString() : undefined,
           });
         } else {
           seats.push({

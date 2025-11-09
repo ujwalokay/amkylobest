@@ -64,7 +64,7 @@ export type Cafe = z.infer<typeof cafeSchema>;
 // Seat Detail Schema
 export const seatDetailSchema = z.object({
   seatName: z.string(),
-  status: z.enum(["available", "occupied"]),
+  status: z.enum(["available", "occupied", "booked"]),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
 });
