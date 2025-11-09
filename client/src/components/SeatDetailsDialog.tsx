@@ -21,7 +21,7 @@ interface SeatDetailsDialogProps {
   stationType: string;
 }
 
-type FilterStatus = "all" | "available" | "occupied" | "booked";
+type FilterStatus = "all" | "available" | "occupied" | "has_bookings";
 
 export function SeatDetailsDialog({
   open,
@@ -64,7 +64,8 @@ export function SeatDetailsDialog({
 
       const matchesFilter =
         filterStatus === "all" ||
-        seat.status === filterStatus;
+        (filterStatus === "has_bookings" && seat.bookings && seat.bookings.length > 0) ||
+        (filterStatus !== "has_bookings" && seat.status === filterStatus);
 
       return matchesSearch && matchesFilter;
     });
@@ -134,16 +135,16 @@ export function SeatDetailsDialog({
                 </Button>
                 <Button
                   size="sm"
-                  variant={filterStatus === "booked" ? "default" : "outline"}
-                  onClick={() => setFilterStatus("booked")}
+                  variant={filterStatus === "has_bookings" ? "default" : "outline"}
+                  onClick={() => setFilterStatus("has_bookings")}
                   className={`flex-1 ${
-                    filterStatus === "booked" 
+                    filterStatus === "has_bookings" 
                       ? "bg-warning hover:bg-warning/90" 
                       : ""
                   }`}
-                  data-testid="button-filter-booked"
+                  data-testid="button-filter-has-bookings"
                 >
-                  Booked
+                  Has Bookings
                 </Button>
                 <Button
                   size="sm"
@@ -208,10 +209,9 @@ export function SeatDetailsDialog({
           )}
 
           {!isLoading && !error && seatData && filteredSeats.map((seat) => {
+            const hasBookings = seat.bookings && seat.bookings.length > 0;
             const bgColor = seat.status === "available" 
-              ? "bg-success/10 border-success/30"
-              : seat.status === "booked"
-              ? "bg-warning/10 border-warning/30"
+              ? (hasBookings ? "bg-warning/10 border-warning/30" : "bg-success/10 border-success/30")
               : "bg-destructive/10 border-destructive/30";
             
             return (
@@ -223,9 +223,11 @@ export function SeatDetailsDialog({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {seat.status === "available" ? (
-                      <CircleCheckBig className="h-5 w-5 text-success" data-testid={`icon-available-${seat.seatName}`} />
-                    ) : seat.status === "booked" ? (
-                      <Calendar className="h-5 w-5 text-warning" data-testid={`icon-booked-${seat.seatName}`} />
+                      hasBookings ? (
+                        <Calendar className="h-5 w-5 text-warning" data-testid={`icon-has-bookings-${seat.seatName}`} />
+                      ) : (
+                        <CircleCheckBig className="h-5 w-5 text-success" data-testid={`icon-available-${seat.seatName}`} />
+                      )
                     ) : (
                       <CircleX className="h-5 w-5 text-destructive" data-testid={`icon-occupied-${seat.seatName}`} />
                     )}
@@ -234,48 +236,59 @@ export function SeatDetailsDialog({
                     </span>
                   </div>
                   <Badge
-                    variant={seat.status === "available" ? "default" : seat.status === "booked" ? "default" : "destructive"}
+                    variant={seat.status === "available" ? "default" : "destructive"}
                     className={
                       seat.status === "available" 
-                        ? "bg-success hover:bg-success/90" 
-                        : seat.status === "booked"
-                        ? "bg-warning hover:bg-warning/90"
+                        ? (hasBookings ? "bg-warning hover:bg-warning/90" : "bg-success hover:bg-success/90")
                         : ""
                     }
                     data-testid={`badge-status-${seat.seatName}`}
                   >
-                    {seat.status === "available" ? "Available" : seat.status === "booked" ? "Booked" : "Occupied"}
+                    {seat.status === "available" ? (hasBookings ? "Has Bookings" : "Available") : "Occupied"}
                   </Badge>
                 </div>
 
                 {seat.status === "occupied" && seat.startTime && (
-                  <div className="text-sm text-muted-foreground space-y-1 ml-7">
-                    <div className="flex items-center gap-2" data-testid={`text-start-time-${seat.seatName}`}>
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>Started: {formatTime(seat.startTime)}</span>
+                  <div className="text-sm text-muted-foreground space-y-2 ml-7">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2" data-testid={`text-start-time-${seat.seatName}`}>
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>Started: {formatTime(seat.startTime)}</span>
+                      </div>
+                      <div className="flex items-center gap-2" data-testid={`text-end-time-${seat.seatName}`}>
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>Ends: {seat.endTime ? formatTime(seat.endTime) : "TBD"}</span>
+                      </div>
+                      {seat.endTime && (
+                        <div className="text-xs text-muted-foreground/80" data-testid={`text-time-remaining-${seat.seatName}`}>
+                          Will be free {getTimeRemaining(seat.endTime)}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2" data-testid={`text-end-time-${seat.seatName}`}>
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>Ends: {seat.endTime ? formatTime(seat.endTime) : "TBD"}</span>
-                    </div>
-                    {seat.endTime && (
-                      <div className="text-xs text-muted-foreground/80" data-testid={`text-time-remaining-${seat.seatName}`}>
-                        Will be free {getTimeRemaining(seat.endTime)}
+                    
+                    {seat.bookings && seat.bookings.length > 1 && (
+                      <div className="space-y-1">
+                        <div className="font-medium text-foreground text-xs">Other bookings today:</div>
+                        {seat.bookings.slice(1).map((booking, idx) => (
+                          <div key={idx} className="flex items-center gap-2 py-1 px-2 bg-warning/5 rounded border border-warning/20" data-testid={`booking-slot-${seat.seatName}-${idx+1}`}>
+                            <Clock className="h-3.5 w-3.5 text-warning" />
+                            <span className="text-foreground">{formatTime(booking.startTime)} - {formatTime(booking.endTime)}</span>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
                 )}
 
-                {seat.status === "booked" && seat.startTime && (
-                  <div className="text-sm text-muted-foreground space-y-1 ml-7">
-                    <div className="flex items-center gap-2" data-testid={`text-booked-start-${seat.seatName}`}>
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>Starts: {formatTime(seat.startTime)}</span>
-                    </div>
-                    <div className="flex items-center gap-2" data-testid={`text-booked-end-${seat.seatName}`}>
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>Ends: {seat.endTime ? formatTime(seat.endTime) : "TBD"}</span>
-                    </div>
+                {seat.status === "available" && seat.bookings && seat.bookings.length > 0 && (
+                  <div className="text-sm text-muted-foreground space-y-2 ml-7">
+                    <div className="font-medium text-foreground text-xs">Booked time slots today:</div>
+                    {seat.bookings.map((booking, idx) => (
+                      <div key={idx} className="flex items-center gap-2 py-1 px-2 bg-warning/5 rounded border border-warning/20" data-testid={`booking-slot-${seat.seatName}-${idx}`}>
+                        <Clock className="h-3.5 w-3.5 text-warning" />
+                        <span className="text-foreground">{formatTime(booking.startTime)} - {formatTime(booking.endTime)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

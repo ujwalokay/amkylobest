@@ -61,12 +61,22 @@ export const cafeSchema = z.object({
 
 export type Cafe = z.infer<typeof cafeSchema>;
 
+// Booking Time Slot Schema
+export const bookingTimeSlotSchema = z.object({
+  startTime: z.string(),
+  endTime: z.string(),
+  status: z.enum(["running", "booked", "upcoming"]),
+});
+
+export type BookingTimeSlot = z.infer<typeof bookingTimeSlotSchema>;
+
 // Seat Detail Schema
 export const seatDetailSchema = z.object({
   seatName: z.string(),
-  status: z.enum(["available", "occupied", "booked"]),
+  status: z.enum(["available", "occupied"]),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
+  bookings: z.array(bookingTimeSlotSchema).optional(),
 });
 
 export type SeatDetail = z.infer<typeof seatDetailSchema>;
