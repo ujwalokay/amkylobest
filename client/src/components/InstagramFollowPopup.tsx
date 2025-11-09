@@ -30,7 +30,11 @@ const getProfileImageSources = (username: string, uploadedImage: string, customU
   return sources;
 };
 
-export function InstagramFollowPopup() {
+interface InstagramFollowPopupProps {
+  onClose?: () => void;
+}
+
+export function InstagramFollowPopup({ onClose }: InstagramFollowPopupProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [imageSource1, setImageSource1] = useState(0);
@@ -70,6 +74,12 @@ export function InstagramFollowPopup() {
     setTimeout(() => {
       setIsOpen(false);
       setShowThankYou(false);
+      // Trigger the onClose callback to show refresh popup
+      if (onClose) {
+        setTimeout(() => {
+          onClose();
+        }, 300); // Small delay for smooth transition
+      }
     }, 2500);
   };
 

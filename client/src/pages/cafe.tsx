@@ -31,6 +31,7 @@ import consoleAreaImg from "@assets/generated_images/Console_gaming_lounge_area_
 import vrZoneImg from "@assets/generated_images/VR_gaming_zone_setup_ef3d2698.png";
 import { SplashScreen } from "@/components/SplashScreen";
 import { InstagramFollowPopup } from "@/components/InstagramFollowPopup";
+import { RefreshReminderPopup } from "@/components/RefreshReminderPopup";
 import { ShareDialog } from "@/components/ShareDialog";
 import { SeatDetailsDialog } from "@/components/SeatDetailsDialog";
 
@@ -44,6 +45,7 @@ export default function CafePage() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showSeatDetails, setShowSeatDetails] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{ category: string; type: string } | null>(null);
+  const [showRefreshPopup, setShowRefreshPopup] = useState(false);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
@@ -468,7 +470,13 @@ export default function CafePage() {
       </div>
 
       {/* Instagram Follow Popup */}
-      <InstagramFollowPopup />
+      <InstagramFollowPopup onClose={() => setShowRefreshPopup(true)} />
+
+      {/* Refresh Reminder Popup */}
+      <RefreshReminderPopup 
+        isOpen={showRefreshPopup}
+        onClose={() => setShowRefreshPopup(false)}
+      />
 
       {/* Share Dialog */}
       <ShareDialog 
