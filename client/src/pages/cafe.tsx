@@ -484,13 +484,9 @@ export default function CafePage() {
       <InstagramFollowPopup onClose={(wasDismissed) => {
         console.log("[CafePage] Instagram onClose called, wasDismissed:", wasDismissed);
         
-        // Only show refresh popup immediately if not dismissed
-        if (!wasDismissed) {
-          console.log("[CafePage] Showing refresh popup immediately");
-          setShowRefreshPopup(true);
-        } else {
-          console.log("[CafePage] Instagram was dismissed, not showing refresh popup");
-        }
+        // Show refresh popup immediately regardless of how Instagram was dismissed
+        console.log("[CafePage] Showing refresh popup immediately");
+        setShowRefreshPopup(true);
       }} />
 
       {/* Refresh Reminder Popup */}
