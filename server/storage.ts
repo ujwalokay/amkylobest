@@ -24,21 +24,41 @@ export class ExternalDbStorage implements IStorage {
   }
 
   constructor() {
-    // Use Replit's built-in database or read-only connection if available
-    const dbUrl = process.env.READONLY_DATABASE_URL || process.env.EXTERNAL_DATABASE_URL || process.env.DATABASE_URL;
-    this.isSecureConnection = !!process.env.READONLY_DATABASE_URL;
+    // SECURITY: Enforce read-only database connection requirement
+    // This prevents any accidental or malicious write operations to the database
     
-    if (!dbUrl) {
-      throw new Error('No database connection string available. Please ensure DATABASE_URL is set.');
-    }
+    let dbUrl: string;
     
-    if (!this.isSecureConnection && !process.env.DATABASE_URL) {
-      console.warn('⚠️  SECURITY WARNING: Using admin database connection. Please set up READONLY_DATABASE_URL for better security.');
-      console.warn('⚠️  See DATABASE_SECURITY_SETUP.md for instructions.');
-    } else if (process.env.DATABASE_URL && !process.env.READONLY_DATABASE_URL) {
-      console.log('✅ Using Replit built-in database connection');
-    } else {
+    if (process.env.READONLY_DATABASE_URL) {
+      // Preferred: Use dedicated read-only connection
+      dbUrl = process.env.READONLY_DATABASE_URL;
+      this.isSecureConnection = true;
       console.log('✅ Using secure read-only database connection');
+    } else if (process.env.DATABASE_URL) {
+      // Fallback: Use Replit built-in database (which should be read-only for this use case)
+      dbUrl = process.env.DATABASE_URL;
+      this.isSecureConnection = true;
+      console.log('✅ Using Replit built-in database connection');
+      console.log('💡 For enhanced security, consider setting up READONLY_DATABASE_URL');
+    } else if (process.env.EXTERNAL_DATABASE_URL) {
+      // SECURITY: EXTERNAL_DATABASE_URL is typically admin credentials
+      // Refuse to start unless explicitly allowed in development
+      if (process.env.NODE_ENV === 'production') {
+        console.error('🚨 SECURITY ERROR: EXTERNAL_DATABASE_URL cannot be used in production');
+        console.error('🚨 Please set READONLY_DATABASE_URL or DATABASE_URL instead');
+        throw new Error('SECURITY: Read-only database credentials required in production');
+      }
+      
+      dbUrl = process.env.EXTERNAL_DATABASE_URL;
+      this.isSecureConnection = false;
+      console.warn('⚠️  SECURITY WARNING: Using EXTERNAL_DATABASE_URL with full privileges');
+      console.warn('⚠️  This is only allowed in development mode');
+      console.warn('⚠️  Set READONLY_DATABASE_URL for production deployment');
+    } else {
+      // No database connection available - fail hard
+      console.error('🚨 SECURITY ERROR: No database connection configured');
+      console.error('🚨 Please set one of: READONLY_DATABASE_URL, DATABASE_URL');
+      throw new Error('No database connection string available. Please ensure READONLY_DATABASE_URL or DATABASE_URL is set.');
     }
     
     const baseSql = neon(dbUrl);
