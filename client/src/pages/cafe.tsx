@@ -484,13 +484,10 @@ export default function CafePage() {
       <InstagramFollowPopup onClose={(wasDismissed) => {
         console.log("[CafePage] Instagram onClose called, wasDismissed:", wasDismissed);
         
-        // Only schedule refresh popup if not dismissed
+        // Only show refresh popup immediately if not dismissed
         if (!wasDismissed) {
-          console.log("[CafePage] Scheduling refresh popup for 5 minutes");
-          setTimeout(() => {
-            console.log("[CafePage] 5 minutes elapsed, showing refresh popup");
-            setShowRefreshPopup(true);
-          }, 5 * 60 * 1000); // 5 minutes
+          console.log("[CafePage] Showing refresh popup immediately");
+          setShowRefreshPopup(true);
         } else {
           console.log("[CafePage] Instagram was dismissed, not showing refresh popup");
         }
@@ -499,7 +496,16 @@ export default function CafePage() {
       {/* Refresh Reminder Popup */}
       <RefreshReminderPopup 
         isOpen={showRefreshPopup}
-        onClose={() => setShowRefreshPopup(false)}
+        onClose={() => {
+          console.log("[CafePage] Refresh popup closed, scheduling next reminder in 5 minutes");
+          setShowRefreshPopup(false);
+          
+          // Schedule to show again after 5 minutes
+          setTimeout(() => {
+            console.log("[CafePage] 5 minutes elapsed, showing refresh popup again");
+            setShowRefreshPopup(true);
+          }, 5 * 60 * 1000); // 5 minutes
+        }}
       />
 
       {/* Share Dialog */}
