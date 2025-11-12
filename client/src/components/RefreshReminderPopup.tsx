@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,89 +15,51 @@ interface RefreshReminderPopupProps {
 }
 
 export function RefreshReminderPopup({ isOpen, onClose }: RefreshReminderPopupProps) {
-  const [countdown, setCountdown] = useState(5);
-
   useEffect(() => {
     console.log("[RefreshReminderPopup] isOpen changed:", isOpen);
-    if (!isOpen) {
-      setCountdown(5);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
   }, [isOpen]);
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
-  const handleClose = (open: boolean) => {
-    // Only allow closing if countdown is 0 and user is trying to close
-    if (!open && countdown === 0) {
-      onClose();
-    }
+  const handleClose = () => {
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-md w-[95vw] max-w-[420px] rounded-2xl p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-bold text-center px-2">
-            🔄 Refresh for Latest Updates
+            💡 Refresh for Better Seat Availability Check
           </DialogTitle>
           <DialogDescription className="text-center text-xs sm:text-sm px-2">
-            For better availability view and real-time updates
+            Get the most accurate real-time seat information
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-6 space-y-6">
           <div className="flex justify-center">
             <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full">
-              <RefreshCw className="h-12 w-12 text-white animate-spin" />
+              <RefreshCw className="h-12 w-12 text-white" />
             </div>
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Refreshing the page will show you the most up-to-date gaming station availability
-            </p>
-            <p className="text-xs text-muted-foreground">
-              This ensures you see real-time booking information
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              To see the latest seat availability and make sure you get accurate booking information, please refresh the page regularly.
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <Button
-              onClick={handleRefresh}
+              onClick={handleClose}
               className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-5 sm:py-6 text-sm sm:text-base rounded-xl"
-              data-testid="button-refresh-page"
-            >
-              Refresh Now
-            </Button>
-
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              className="w-full text-xs sm:text-sm text-muted-foreground hover:text-foreground"
-              disabled={countdown > 0}
               data-testid="button-close-refresh-popup"
             >
-              {countdown > 0 ? `Close in ${countdown}s` : "Close"}
+              Okay, I Got It
             </Button>
           </div>
 
           <p className="text-xs text-center text-muted-foreground px-2 leading-relaxed">
-            💡 Tip: Refresh regularly to see the latest seat availability
+            💡 Refresh the page anytime to see updated seat availability
           </p>
         </div>
       </DialogContent>

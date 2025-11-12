@@ -31,7 +31,7 @@ const getProfileImageSources = (username: string, uploadedImage: string, customU
 };
 
 interface InstagramFollowPopupProps {
-  onClose?: () => void;
+  onClose?: (wasDismissed: boolean) => void;
 }
 
 export function InstagramFollowPopup({ onClose }: InstagramFollowPopupProps = {}) {
@@ -75,20 +75,27 @@ export function InstagramFollowPopup({ onClose }: InstagramFollowPopupProps = {}
     setTimeout(() => {
       setIsOpen(false);
       setShowThankYou(false);
-      // Trigger the onClose callback to show refresh popup
+      // Trigger the onClose callback (not dismissed, should show refresh notice)
       if (onClose) {
-        console.log("[InstagramFollowPopup] Calling onClose callback");
+        console.log("[InstagramFollowPopup] Calling onClose callback with wasDismissed=false");
         setTimeout(() => {
-          onClose();
+          onClose(false);
         }, 300); // Small delay for smooth transition
       }
     }, 2500);
   };
 
   const handleDontShowAgain = () => {
+    console.log("[InstagramFollowPopup] Don't show again clicked");
     const tenMinutesFromNow = Date.now() + (10 * 60 * 1000);
     localStorage.setItem("instagram-popup-dismissed-until", tenMinutesFromNow.toString());
     setIsOpen(false);
+    // Call onClose with wasDismissed=true so refresh notice won't show
+    if (onClose) {
+      setTimeout(() => {
+        onClose(true);
+      }, 300);
+    }
   };
 
   const account1Raw = import.meta.env.VITE_INSTAGRAM_ACCOUNT_1 || "gamezone.arena";
