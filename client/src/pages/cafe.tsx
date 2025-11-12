@@ -19,7 +19,9 @@ import {
   Clock,
   Calendar,
   Share2,
-  ArrowDown
+  ArrowDown,
+  Eye,
+  ChevronRight
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import useEmblaCarousel from "embla-carousel-react";
@@ -235,26 +237,35 @@ export default function CafePage() {
             return (
               <Card 
                 key={station.id} 
-                className="p-4 border-card-border hover-elevate transition-transform duration-200 cursor-pointer active:scale-95"
+                className="p-4 border-card-border hover-elevate transition-transform duration-200 cursor-pointer active:scale-95 relative"
                 data-testid={`card-station-${station.type.toLowerCase().replace(" ", "-")}`}
                 onClick={() => handleStationClick(station.type, station.type)}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-2 bg-primary/10 rounded-md">
-                    <Icon className="h-5 w-5 text-primary" data-testid={`icon-station-${station.type.toLowerCase().replace(" ", "-")}`} />
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded-md">
+                      <Icon className="h-5 w-5 text-primary" data-testid={`icon-station-${station.type.toLowerCase().replace(" ", "-")}`} />
+                    </div>
+                    <span className="text-sm font-medium text-foreground" data-testid={`text-station-type-${station.id}`}>
+                      {station.type}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-foreground" data-testid={`text-station-type-${station.id}`}>
-                    {station.type}
-                  </span>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
                 </div>
                 <div className="text-3xl font-bold text-foreground mb-1" data-testid={`text-availability-${station.id}`}>
                   {station.available}/{station.total}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className={`h-2 w-2 rounded-full ${isLimited ? 'bg-warning' : 'bg-success'}`} data-testid={`indicator-status-${station.id}`} />
-                  <span className="text-xs text-muted-foreground" data-testid={`text-status-${station.id}`}>
-                    {station.status}
-                  </span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className={`h-2 w-2 rounded-full ${isLimited ? 'bg-warning' : 'bg-success'}`} data-testid={`indicator-status-${station.id}`} />
+                    <span className="text-xs text-muted-foreground" data-testid={`text-status-${station.id}`}>
+                      {station.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-primary">
+                    <Eye className="h-3.5 w-3.5" />
+                    <span className="text-xs font-medium">View Seats</span>
+                  </div>
                 </div>
               </Card>
             );
